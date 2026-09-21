@@ -1,0 +1,12 @@
+# Snapshot of the verified Python 3.10 environment (including transitive dependencies).
+# Install with: python -m pip install -r requirements.lock
+certifi==2026.7.22
+charset-normalizer==3.5.1
+idna==3.20
+mutagen==1.48.1
+pillow==12.3.0
+requests==2.34.2
+tomli==2.2.1
+urllib3==2.8.0
+yt-dlp==2026.8.19
+ytmusicapi==1.12.3

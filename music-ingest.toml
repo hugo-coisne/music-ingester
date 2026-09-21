@@ -1,0 +1,16 @@
+[settings]
+default_profile = "production"
+
+[profiles.production]
+library_dir = "library"
+staging_dir = "staging"
+db_path = "state/ingest.db"
+reference_libraries = []
+download_timeout = 900
+
+[profiles.sandbox]
+library_dir = "environments/sandbox/library"
+staging_dir = "environments/sandbox/staging"
+db_path = "environments/sandbox/state/ingest.db"
+reference_libraries = []
+download_timeout = 900
