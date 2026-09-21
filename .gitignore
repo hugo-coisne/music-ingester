@@ -8,3 +8,4 @@ library/
 staging/
 state/
 environments/
+deploy/*.local.toml

@@ -18,8 +18,16 @@ def fingerprint(path: Path) -> str | None:
     try:
         result = subprocess.run(
             ["fpcalc", "-json", "-length", "120", str(path)],
-            capture_output=True, text=True, check=True, timeout=60,
+            capture_output=True, text=True, check=False, timeout=60,
         )
+        # Debian's fpcalc/FFmpeg combination reports EOF as exit 3 even after
+        # successfully fingerprinting a short file. Accept only this exact case;
+        # other decoder failures must not establish a duplicate match.
+        eof_warning = "ERROR: Error decoding audio frame (End of file)"
+        if result.returncode != 0 and not (
+            result.returncode == 3 and result.stderr.strip() == eof_warning
+        ):
+            return None
         value = json.loads(result.stdout).get("fingerprint")
         return value if isinstance(value, str) and value else None
     except (OSError, subprocess.SubprocessError, ValueError):

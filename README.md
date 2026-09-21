@@ -1,8 +1,23 @@
-# Music ingestion MVP
+# Music ingestion
 
 A Python CLI that imports a YouTube Music playlist into a tagged M4A library.
 It checks existing audio, downloads missing tracks with yt-dlp, writes metadata
 and artwork, and records progress in SQLite.
+
+## Server deployment
+
+The [deployment guide](deploy/README.md) covers Docker, GitHub Actions publication
+on `main`, SSH deployment from a workstation, configuration snapshots, rollback,
+SQLite backups and an optional systemd timer. Automatic server deployment is
+opt-in; the committed application profiles continue to use local directories.
+
+```bash
+docker build --target production -t music-ingester:local .
+.venv/bin/python tests/container_smoke.py --image music-ingester:local
+```
+
+The production image build runs the regression suite. The separate offline
+Compose smoke test verifies volume permissions, publication and idempotence.
 
 ## Setup
 
@@ -264,5 +279,6 @@ the existing library or history.
 PLAYLIST_ID` inspects artwork sources. Both are manual network diagnostics, not
 regression tests, and both support `--help`.
 
-Runtime files and the virtual environment are excluded by `.gitignore`. This
-workspace was supplied without usable Git metadata; no repository was initialized.
+Runtime files, local deployment targets and the virtual environment are excluded
+by `.gitignore`. The Docker build context also excludes libraries, databases,
+credentials and local deployment targets.

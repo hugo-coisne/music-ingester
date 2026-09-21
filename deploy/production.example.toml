@@ -1,0 +1,15 @@
+# Copy to production.local.toml (ignored by Git). Paths are examples, not defaults.
+[ssh]
+host = "music-server" # SSH config alias or user@hostname; reachable over LAN/VPN.
+# Optional: identity_file = "~/.ssh/music-ingest"
+# Optional: known_hosts = "~/.ssh/known_hosts"
+port = 22
+
+[deployment]
+root = "/srv/music-ingest" # Existing directory owned by the SSH user.
+library = "/srv/navidrome/music" # Existing real Navidrome music directory.
+uid = 1000 # Must equal the unprivileged SSH user's UID.
+gid = 1000 # Must be one of that user's groups.
+playlist_id = "REPLACE_WITH_PLAYLIST_ID"
+download_timeout = 900
+# Set once during setup; changing storage paths/UID later requires manual migration.

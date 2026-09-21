@@ -1,0 +1,26 @@
+{
+  "services": {
+    "music-ingest": {
+      "image": "REPLACED_BY_DEPLOYMENT",
+      "user": "1000:1000",
+      "read_only": true,
+      "init": true,
+      "restart": "no",
+      "cap_drop": ["ALL"],
+      "security_opt": ["no-new-privileges:true"],
+      "pids_limit": 128,
+      "mem_limit": "2g",
+      "cpus": 2,
+      "tmpfs": ["/tmp:rw,nosuid,nodev,size=256m,mode=1777"],
+      "environment": {
+        "MUSIC_INGEST_CONFIG": "/config/music-ingest.toml",
+        "MUSIC_INGEST_PROFILE": "production"
+      },
+      "logging": {
+        "driver": "json-file",
+        "options": {"max-size": "10m", "max-file": "3"}
+      },
+      "volumes": []
+    }
+  }
+}

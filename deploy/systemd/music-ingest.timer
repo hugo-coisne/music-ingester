@@ -1,0 +1,11 @@
+[Unit]
+Description=Periodic music ingestion
+
+[Timer]
+OnBootSec=5min
+OnUnitInactiveSec=10min
+RandomizedDelaySec=30s
+Unit=music-ingest.service
+
+[Install]
+WantedBy=timers.target
