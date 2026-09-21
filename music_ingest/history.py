@@ -1,6 +1,8 @@
 """SQLite import history; each status change is committed for retry recovery."""
 
 import sqlite3
+import fcntl
+from contextlib import contextmanager, nullcontext
 from pathlib import Path
 
 from .config import DB_PATH
@@ -16,6 +18,26 @@ SCHEMA = """
         imported_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
 """
+
+
+@contextmanager
+def import_lock(db_path: Path, read_only: bool = False):
+    """Only one writer may process a database at a time."""
+    if read_only:
+        with nullcontext():
+            yield
+        return
+    lock_path = db_path.with_suffix(db_path.suffix + ".lock")
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open("a+b") as lockfile:
+        try:
+            fcntl.flock(lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as exc:
+            raise RuntimeError(f"another sync is using {db_path}") from exc
+        try:
+            yield
+        finally:
+            fcntl.flock(lockfile, fcntl.LOCK_UN)
 
 
 def connect_db(db_path: Path = DB_PATH, read_only: bool = False) -> sqlite3.Connection:
@@ -34,6 +56,46 @@ def connect_db(db_path: Path = DB_PATH, read_only: bool = False) -> sqlite3.Conn
         db.close()
         raise
     return db
+
+
+def mark_stage(
+    db: sqlite3.Connection, video_id: str, status: str, local_path: Path | None = None,
+) -> None:
+    """Persist an in-flight stage so recovery can distinguish its last action."""
+    if status not in {"downloaded", "processed", "publishing"}:
+        raise ValueError(f"invalid import stage: {status}")
+    with db:
+        db.execute(
+            "UPDATE imports SET status = ?, local_path = ? WHERE video_id = ?",
+            (status, str(local_path) if local_path else None, video_id),
+        )
+
+
+def recover_published(db: sqlite3.Connection, library_dir: Path) -> int:
+    """Reconcile interrupted imports using the video ID embedded in published audio."""
+    rows = db.execute(
+        "SELECT video_id FROM imports WHERE status IN "
+        "('pending', 'downloaded', 'processed', 'publishing', 'error')"
+    ).fetchall()
+    wanted = {video_id for (video_id,) in rows}
+    if not wanted or not library_dir.exists():
+        return 0
+
+    from mutagen.mp4 import MP4
+
+    found: dict[str, Path] = {}
+    for path in library_dir.rglob("*.m4a"):
+        try:
+            ids = MP4(path).get("----:com.apple.iTunes:YOUTUBE_VIDEO_ID", [])
+            if ids:
+                video_id = bytes(ids[0]).decode("utf-8")
+                if video_id in wanted and video_id not in found:
+                    found[video_id] = path
+        except Exception:
+            continue
+    for video_id, path in found.items():
+        mark_done(db, video_id, path)
+    return len(found)
 
 
 def existing_import(db: sqlite3.Connection, video_id: str) -> bool:
