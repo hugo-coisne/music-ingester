@@ -100,6 +100,23 @@ class AudioIntegrationTests(TemporaryTest):
         self.assertEqual(bytes(audio['covr'][0]), cover.read_bytes())
         self.assertIsNotNone(library.index_audio_file(self.fixture))
 
+    def test_missing_album_does_not_keep_video_upload_date(self):
+        audio = MP4(self.fixture)
+        audio['\xa9alb'] = ['Stale album']
+        audio['aART'] = ['Stale artist']
+        audio['\xa9day'] = ['20160125']
+        audio['trkn'] = [(4, 10)]
+        audio.save()
+
+        tags = sample_metadata()
+        tags.update(album=None, album_artist=None, year=None, track_number=None,
+                    album_id=None)
+        metadata.write_metadata(self.fixture, tags, 'video1')
+        result = MP4(self.fixture)
+        for key in ('\xa9alb', 'aART', '\xa9day', 'trkn',
+                    '----:com.apple.iTunes:YTMUSIC_ALBUM_ID'):
+            self.assertNotIn(key, result)
+
     def test_download_normalization_and_validation(self):
         result = subprocess.CompletedProcess([], 0, str(self.fixture) + '\n', '')
         with patch.object(downloader.subprocess, 'run', return_value=result) as run:
@@ -127,3 +144,39 @@ class AudioIntegrationTests(TemporaryTest):
         self.assertEqual(Path(info['filepath']).suffix, '.m4a')
         self.assertGreater(MP4(info['filepath']).info.length, 0)
 
+    @unittest.skipUnless(shutil.which('fpcalc'), 'Chromaprint fpcalc required')
+    def test_fingerprint_finds_same_audio_with_different_title(self):
+        long_audio = self.root / 'long.m4a'
+        subprocess.run(
+            ['ffmpeg', '-hide_banner', '-loglevel', 'error', '-f', 'lavfi',
+             '-i', 'sine=frequency=440:duration=8', '-c:a', 'aac', str(long_audio)],
+            check=True, capture_output=True, timeout=30,
+        )
+
+        def download_same_audio(video_id, staging, timeout):
+            path = staging / f'{video_id}.m4a'
+            shutil.copyfile(long_audio, path)
+            return path
+
+        first = track('video1', title='Original title', duration=8)
+        second = track('video2', title='Completely different name', duration=8)
+        client = self.client([first, second])
+        with patch.object(downloader, 'download', side_effect=download_same_audio) as run:
+            self.assertEqual(pipeline.run_sync(client, 'p', self.config), 0)
+        self.assertEqual(run.call_count, 2)
+        self.assertEqual(len(list(self.config.library_dir.rglob('*.m4a'))), 1)
+        with sqlite3.connect(self.config.db_path) as db:
+            self.assertEqual(
+                db.execute('select status from imports order by video_id').fetchall(),
+                [('done',), ('existing',)],
+            )
+
+    def test_complete_staged_audio_resumes_without_downloading(self):
+        self.config.staging_dir.mkdir()
+        staged = self.config.staging_dir / 'video1.m4a'
+        shutil.copyfile(self.fixture, staged)
+        with patch.object(downloader, 'download') as run:
+            self.assertEqual(pipeline.run_sync(self.client([track()]), 'p', self.config), 0)
+        run.assert_not_called()
+        self.assertFalse(staged.exists())
+        self.assertEqual(len(list(self.config.library_dir.rglob('*.m4a'))), 1)

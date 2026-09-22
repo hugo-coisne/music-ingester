@@ -1,0 +1,112 @@
+name: Production operation
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        type: choice
+        options: [deploy, rollback, preview, run, doctor, status]
+        required: true
+        default: status
+      image:
+        description: "Deploy only: ghcr.io/owner/image@sha256:..."
+        type: string
+      release:
+        description: "Rollback only: release ID; empty selects the previous release"
+        type: string
+  workflow_call:
+    inputs:
+      operation:
+        type: string
+        required: true
+      image:
+        type: string
+        default: ''
+      release:
+        type: string
+        default: ''
+      automatic:
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# Also serialize manual operations and deployments triggered from CI.
+concurrency:
+  group: music-ingest-production
+  cancel-in-progress: false
+
+jobs:
+  operate:
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    # Optional trusted runner with LAN/VPN reachability; never run PRs on it.
+    runs-on: ${{ vars.DEPLOY_RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: 360
+    steps:
+      - name: Skip obsolete automatic deployments
+        id: eligible
+        env:
+          AUTOMATIC: ${{ inputs.automatic }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request
+          eligible = True
+          if os.environ['AUTOMATIC'] == 'true':
+              url = os.environ['GITHUB_API_URL'] + '/repos/' + os.environ['GITHUB_REPOSITORY'] + '/git/ref/heads/main'
+              request = urllib.request.Request(url, headers={'Authorization': 'Bearer ' + os.environ['GH_TOKEN']})
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  eligible = json.load(response)['object']['sha'] == os.environ['GITHUB_SHA']
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('deploy=' + str(eligible).lower() + '\n')
+          if not eligible:
+              print('A newer main commit exists; this automatic deployment is skipped.')
+          PY
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        if: steps.eligible.outputs.deploy == 'true'
+        with:
+          persist-credentials: false
+      - name: Prepare ephemeral SSH credentials
+        if: steps.eligible.outputs.deploy == 'true'
+        env:
+          TARGET: ${{ secrets.PRODUCTION_TARGET_TOML }}
+          SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.PRODUCTION_KNOWN_HOSTS }}
+        run: |
+          python3 - <<'PY'
+          import os, pathlib
+          os.umask(0o077)
+          for name, variable in [('target.toml', 'TARGET'), ('key', 'SSH_KEY'), ('known_hosts', 'KNOWN_HOSTS')]:
+              value = os.environ[variable]
+              if not value.strip():
+                  raise SystemExit('Missing production secret: ' + variable)
+              path = pathlib.Path(os.environ['RUNNER_TEMP']) / ('music-ingest-' + name)
+              path.write_text(value.rstrip() + '\n')
+              path.chmod(0o600)
+          PY
+      - name: Execute the same command used from the workstation
+        if: steps.eligible.outputs.deploy == 'true'
+        env:
+          OPERATION: ${{ inputs.operation }}
+          IMAGE: ${{ inputs.image }}
+          RELEASE: ${{ inputs.release }}
+        shell: bash
+        run: |
+          arguments=("$OPERATION")
+          if [[ "$OPERATION" == deploy ]]; then arguments+=(--image "$IMAGE"); fi
+          if [[ "$OPERATION" == rollback && -n "$RELEASE" ]]; then arguments+=(--release "$RELEASE"); fi
+          python3 deploy/manage.py \
+            --target "$RUNNER_TEMP/music-ingest-target.toml" \
+            --identity-file "$RUNNER_TEMP/music-ingest-key" \
+            --known-hosts "$RUNNER_TEMP/music-ingest-known_hosts" \
+            "${arguments[@]}"
+      - name: Remove ephemeral credentials
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import os, pathlib
+          for name in ('target.toml', 'key', 'known_hosts'):
+              (pathlib.Path(os.environ['RUNNER_TEMP']) / ('music-ingest-' + name)).unlink(missing_ok=True)
+          PY

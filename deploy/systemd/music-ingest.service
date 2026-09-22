@@ -1,0 +1,17 @@
+[Unit]
+Description=Import the configured YouTube Music playlist
+Wants=network-online.target
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+# Replace these three values with the account/root used by deployment.
+User=music-ingest
+Group=music-ingest
+ExecStart=/usr/bin/python3 /srv/music-ingest/current/controller.py --root /srv/music-ingest run
+TimeoutStartSec=6h
+UMask=0027
+NoNewPrivileges=true
+PrivateTmp=true
+StandardOutput=journal
+StandardError=journal

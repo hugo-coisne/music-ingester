@@ -1,0 +1,67 @@
+name: Test and publish
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Build and test the production image
+        run: docker build --target production --tag music-ingest:tested .
+      - name: Validate workflow definitions
+        run: docker run --rm --network none --mount "type=bind,source=$PWD,target=/repo,readonly" --workdir /repo rhysd/actionlint@sha256:887a259a5a534f3c4f36cb02dca341673c6089431057242cdc931e9f133147e9
+      - name: Exercise Compose, persistence and idempotence offline
+        run: python3 tests/container_smoke.py --image music-ingest:tested
+
+  publish:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.reference.outputs.image }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Build and test the exact image to publish
+        run: docker build --target production --label "org.opencontainers.image.revision=$GITHUB_SHA" --tag music-ingest:tested .
+      - name: Verify the image before publishing
+        run: python3 tests/container_smoke.py --image music-ingest:tested
+      - uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish the tested image and record its digest
+        id: reference
+        env:
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          tag="ghcr.io/${REPOSITORY,,}:sha-$GITHUB_SHA"
+          docker tag music-ingest:tested "$tag"
+          docker push "$tag"
+          image=$(docker image inspect --format '{{index .RepoDigests 0}}' "$tag")
+          echo "image=$image" >> "$GITHUB_OUTPUT"
+          echo "Deployable image: \`$image\`" >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    needs: publish
+    if: vars.DEPLOY_ON_MAIN == 'true'
+    uses: ./.github/workflows/operate.yml
+    with:
+      operation: deploy
+      image: ${{ needs.publish.outputs.image }}
+      automatic: true
+    secrets: inherit

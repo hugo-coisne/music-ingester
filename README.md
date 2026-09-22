@@ -1,14 +1,30 @@
-# Music ingestion MVP
+# Music ingestion
 
 A Python CLI that imports a YouTube Music playlist into a tagged M4A library.
 It checks existing audio, downloads missing tracks with yt-dlp, writes metadata
 and artwork, and records progress in SQLite.
 
+## Server deployment
+
+The [deployment guide](deploy/README.md) covers Docker, GitHub Actions publication
+on `main`, SSH deployment from a workstation, configuration snapshots, rollback,
+SQLite backups and an optional systemd timer. Automatic server deployment is
+opt-in; the committed application profiles continue to use local directories.
+
+```bash
+docker build --target production -t music-ingester:local .
+.venv/bin/python tests/container_smoke.py --image music-ingester:local
+```
+
+The production image build runs the regression suite. The separate offline
+Compose smoke test verifies volume permissions, publication and idempotence.
+
 ## Setup
 
 Requires Python 3.10 or newer, plus `ffmpeg` and `ffprobe` on PATH. The dependency
 snapshot and tests were verified with Python 3.10.12. Install FFmpeg using your
-operating system's package manager if it is absent.
+operating system's package manager if it is absent. Install `fpcalc` (Chromaprint)
+for the optional third level of audio duplicate detection; `doctor` checks for it.
 
 ```bash
 python3 -m venv .venv
@@ -40,6 +56,10 @@ package form from this project directory:
 
 # Import with isolated sandbox paths.
 .venv/bin/python sync.py PLAYLIST_ID --profile sandbox
+
+# Inspect the selected sandbox environment before a live test.
+.venv/bin/python -m music_ingest doctor --profile sandbox
+.venv/bin/python -m music_ingest status --profile sandbox
 
 # Also check another library for duplicates; it is only read.
 .venv/bin/python sync.py PLAYLIST_ID --reference-library /path/to/music
@@ -133,6 +153,12 @@ account are not configured by this project.
   heuristically, so ambiguous tags can result in an extra download.
 - The index is updated after each import to detect another video ID for that
   recording in the same run. Repeated identical video IDs are processed once.
+- After a new download, `fpcalc` computes a Chromaprint fingerprint and compares
+  it with tagged library recordings of similar duration, regardless of title or
+  artist. Exact fingerprint matches are recorded as existing. This does not
+  contact AcoustID and does not run when `fpcalc` is unavailable. Reference files
+  without readable title/artist tags are not fingerprint candidates. Fingerprints
+  are cached in memory for one run, so a large library can add processing time.
 - AAC/M4A is preferred. Other audio formats are converted to AAC/M4A by FFmpeg;
   this fallback is lossy. Existing M4A audio does not need transcoding. User-wide
   yt-dlp configuration is ignored to keep output predictable.
@@ -148,8 +174,10 @@ account are not configured by this project.
   can be cropped; original and processed JPEGs remain in staging.
 - Artwork failures are warnings. Embedding operates on a temporary audio copy,
   preserving the tagged audio if embedding fails.
-- Failed imports retain an error in SQLite and can be retried by running the same
-  command again. Staged downloads and diagnostic assets are retained.
+- The import history records `pending`, `downloaded`, `processed`, `publishing`,
+  then `done` (or `existing` / `error`). On restart, a published M4A with the
+  expected embedded video ID repairs an interrupted row. A complete M4A left in
+  staging is reused. Failed imports retain an error and can be retried.
 
 The summary distinguishes `imported`, `existing`, `new`, `failed`, `skipped`, and
 `artwork_warnings`. `new` counts candidates, not successful downloads. Exit status
@@ -158,11 +186,39 @@ failures, and **2** for invalid command-line arguments. Artwork warnings alone d
 not fail a run. Preview cannot determine whether different new video IDs will
 produce the same audio, so its candidate count can exceed actual imports.
 
-Use one sync process per staging directory and database. Exclusive publication
-protects destination files, but the whole downloader/history workflow is not a
-cross-process transaction. A hard interruption can leave temporary files or a
-published file whose history update has not completed; the next library scan can
-recognize tagged audio through the normal duplicate rules.
+An exclusive lock prevents two sync processes from writing the same database at
+once. Publication remains an atomic hard link from a complete temporary file on
+the destination filesystem, including when staging is on another filesystem.
+SQLite and the filesystem cannot commit as one transaction. Recovery reconciles
+published tagged files on the next run; an unexpected power failure can still
+leave a hidden `.ingest-*` temporary file for manual inspection.
+
+## Maintenance
+
+All maintenance commands accept `--profile` and `--config` with the same
+precedence as sync commands. They do not contact YouTube Music.
+
+```bash
+.venv/bin/python -m music_ingest status --profile sandbox
+.venv/bin/python -m music_ingest doctor --profile sandbox
+.venv/bin/python -m music_ingest cleanup --profile sandbox
+.venv/bin/python -m music_ingest cleanup --profile sandbox --apply
+```
+
+`status` reports import states and missing recorded files. `doctor` checks
+FFmpeg, ffprobe, fpcalc, path access, and SQLite integrity without creating
+directories. `cleanup` previews known staging sidecars for completed imports;
+`--apply` removes them. Error artifacts are retained unless `--drop-errors` is
+also passed. Unknown and in-flight artifacts are always kept. The cleanup
+command does not delete library audio, and completed staging audio is retained
+for inspection if unexpectedly present.
+
+For the first real test, use a playlist containing a new track, a track already
+in the reference library, and an obscure track without a YTMusic album. Run a
+sandbox sync, inspect tags/artwork/file paths and `status`, then repeat the same
+sync to check idempotence. Supply `--reference-library /path/to/existing/music`
+to exercise duplicate detection against a separate library. The sandbox profile
+alone checks only its own isolated library.
 
 ## Source layout
 
@@ -183,6 +239,8 @@ changes are required by this layout.
 | `artwork.py` | Select, crop, download, and safely embed optional artwork |
 | `publishing.py` | Determine filenames and publish complete files without overwriting |
 | `history.py` | SQLite schema, read-only preview connections, committed status transitions |
+| `fingerprint.py` | Local acoustic fingerprint comparison after download |
+| `maintenance.py` | Status, doctor and conservative cleanup commands |
 | `diagnostics.py` | Manual playlist and artwork inspection commands |
 
 The dependency flow starts at the CLI and passes through the pipeline to focused
@@ -221,5 +279,6 @@ the existing library or history.
 PLAYLIST_ID` inspects artwork sources. Both are manual network diagnostics, not
 regression tests, and both support `--help`.
 
-Runtime files and the virtual environment are excluded by `.gitignore`. This
-workspace was supplied without usable Git metadata; no repository was initialized.
+Runtime files, local deployment targets and the virtual environment are excluded
+by `.gitignore`. The Docker build context also excludes libraries, databases,
+credentials and local deployment targets.
