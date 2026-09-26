@@ -44,7 +44,8 @@ les commandes du poste et du timer.
 Prérequis : Ubuntu/Linux, Python **3.10+**, Docker Engine local et Docker Compose
 v2 récent ou v5 (syntaxe `bind.create_host_path` et `run --pull`). L'installation
 validée ici utilise un Docker Engine classique, pas un daemon distant ni un
-mapping rootless. L'application et ses dépendances Python/audio sont dans l'image.
+mapping rootless. L'application, Deno, les scripts EJS de yt-dlp et les dépendances
+Python/audio sont dans l'image.
 
 Choisir un compte non-root autorisé à utiliser Docker, un dossier de déploiement
 et le dossier **réel** de musique partagé avec Navidrome. Le compte SSH doit avoir

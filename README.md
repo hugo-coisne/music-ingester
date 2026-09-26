@@ -21,10 +21,12 @@ Compose smoke test verifies volume permissions, publication and idempotence.
 
 ## Setup
 
-Requires Python 3.10 or newer, plus `ffmpeg` and `ffprobe` on PATH. The dependency
-snapshot and tests were verified with Python 3.10.12. Install FFmpeg using your
-operating system's package manager if it is absent. Install `fpcalc` (Chromaprint)
-for the optional third level of audio duplicate detection; `doctor` checks for it.
+Requires Python 3.10 or newer, plus `ffmpeg`, `ffprobe` and Deno 2.3+ on PATH.
+The dependency snapshot and tests were verified with Python 3.10.12. Deno and the
+matching `yt-dlp-ejs` package solve the JavaScript challenges required by current
+YouTube extraction. Install `fpcalc` (Chromaprint) for the optional third level of
+audio duplicate detection; `doctor` checks all of these prerequisites. The Docker
+image supplies Deno, FFmpeg, fpcalc and the Python dependencies itself.
 
 ```bash
 python3 -m venv .venv
@@ -172,8 +174,10 @@ account are not configured by this project.
 - Album metadata and artwork share a per-run cache, including failed lookups.
   Album artwork is preferred, with track thumbnails as a fallback. Flat sidebars
   can be cropped; original and processed JPEGs remain in staging.
-- Artwork failures are warnings. Embedding operates on a temporary audio copy,
-  preserving the tagged audio if embedding fails.
+- Artwork downloads retry transient network errors, HTTP 429 and common HTTP 5xx
+  responses three times with a short backoff. Permanent failures remain warnings.
+  Embedding operates on a temporary audio copy, preserving the tagged audio if
+  embedding fails.
 - The import history records `pending`, `downloaded`, `processed`, `publishing`,
   then `done` (or `existing` / `error`). On restart, a published M4A with the
   expected embedded video ID repairs an interrupted row. A complete M4A left in
@@ -206,8 +210,8 @@ precedence as sync commands. They do not contact YouTube Music.
 ```
 
 `status` reports import states and missing recorded files. `doctor` checks
-FFmpeg, ffprobe, fpcalc, path access, and SQLite integrity without creating
-directories. `cleanup` previews known staging sidecars for completed imports;
+FFmpeg, ffprobe, fpcalc, Deno, yt-dlp-ejs, path access, and SQLite integrity
+without creating directories. `cleanup` previews known staging sidecars for completed imports;
 `--apply` removes them. Error artifacts are retained unless `--drop-errors` is
 also passed. Unknown and in-flight artifacts are always kept. The cleanup
 command does not delete library audio, and completed staging audio is retained
