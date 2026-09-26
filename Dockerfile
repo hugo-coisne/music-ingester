@@ -1,15 +1,21 @@
+FROM denoland/deno:bin-2.9.7@sha256:bc5aa4466e21b6d3021226a85ba2e1911f7c386254d97b9d797903ab74edace2 AS deno
+
 FROM python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     HOME=/tmp \
+    DENO_DIR=/tmp/deno \
+    DENO_NO_UPDATE_CHECK=1 \
+    DENO_NO_PROMPT=1 \
     MUSIC_INGEST_CONFIG=/config/music-ingest.toml \
     MUSIC_INGEST_PROFILE=production
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ffmpeg libchromaprint-tools ca-certificates \
     && rm -rf /var/lib/apt/lists/*
+COPY --from=deno /deno /usr/local/bin/deno
 WORKDIR /app
 COPY requirements.lock ./
 RUN python -m pip install --no-cache-dir -r requirements.lock && python -m pip check

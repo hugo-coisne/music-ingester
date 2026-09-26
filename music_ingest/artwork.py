@@ -3,6 +3,7 @@
 import io
 import shutil
 import tempfile
+import time
 from enum import Enum
 from pathlib import Path
 
@@ -14,7 +15,10 @@ from .config import STAGING_DIR
 from .models import APIData, Artwork
 
 ARTWORK_TIMEOUT_SECONDS = 30
+ARTWORK_DOWNLOAD_ATTEMPTS = 3
+ARTWORK_RETRY_BACKOFF_SECONDS = 1
 JPEG_QUALITY = 95
+RETRYABLE_HTTP_STATUS = {429, 500, 502, 503, 504}
 
 
 class ArtworkOutcome(Enum):
@@ -65,12 +69,28 @@ def crop_artwork(image: Image.Image) -> tuple[Image.Image, str]:
     return image, ":uncropped"
 
 
+def download_artwork(url: str) -> bytes:
+    """Retry transient transport/server failures without retrying permanent HTTP errors."""
+    for attempt in range(ARTWORK_DOWNLOAD_ATTEMPTS):
+        try:
+            with requests.get(url, timeout=ARTWORK_TIMEOUT_SECONDS) as response:
+                response.raise_for_status()
+                return response.content
+        except requests.RequestException as exc:
+            status = exc.response.status_code if exc.response is not None else None
+            transient = isinstance(exc, (requests.ConnectionError, requests.Timeout))
+            transient = transient or status in RETRYABLE_HTTP_STATUS
+            if not transient or attempt == ARTWORK_DOWNLOAD_ATTEMPTS - 1:
+                raise
+            time.sleep(ARTWORK_RETRY_BACKOFF_SECONDS * 2**attempt)
+    raise RuntimeError("artwork retry loop ended unexpectedly")
+
+
 def prepare_artwork(
     video_id: str, artwork: Artwork, staging_dir: Path = STAGING_DIR,
 ) -> tuple[Path, Path, str]:
-    response = requests.get(artwork["url"], timeout=ARTWORK_TIMEOUT_SECONDS)
-    response.raise_for_status()
-    with Image.open(io.BytesIO(response.content)) as source:
+    content = download_artwork(artwork["url"])
+    with Image.open(io.BytesIO(content)) as source:
         image = source.convert("RGB")
 
     original_path = staging_dir / f"{video_id}.cover-original.jpg"

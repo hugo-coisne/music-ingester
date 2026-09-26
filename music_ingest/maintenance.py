@@ -4,7 +4,9 @@ import os
 import re
 import shutil
 import sqlite3
+import subprocess
 from collections import Counter
+from importlib import metadata
 from pathlib import Path
 
 from .config import Config
@@ -12,6 +14,39 @@ from .config import Config
 ARTIFACT = re.compile(
     r"^(?P<video_id>[A-Za-z0-9_-]+)\.(?:info\.json|cover(?:-original)?\.jpg|m4a)$"
 )
+DENO_VERSION = re.compile(r"^deno (\d+)\.(\d+)\.(\d+)", re.MULTILINE)
+MINIMUM_DENO_VERSION = (2, 3, 0)
+REQUIRED_EJS_VERSION = "0.8.0"
+
+
+def _deno_problem() -> str | None:
+    executable = shutil.which("deno")
+    if not executable:
+        return "deno is not on PATH"
+    try:
+        result = subprocess.run(
+            [executable, "--version"], capture_output=True, text=True,
+            check=True, timeout=10,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        return f"deno cannot run: {exc}"
+    match = DENO_VERSION.search(result.stdout)
+    if not match:
+        return "deno returned an unrecognized version"
+    version = tuple(map(int, match.groups()))
+    if version < MINIMUM_DENO_VERSION:
+        return "deno 2.3.0 or newer is required"
+    return None
+
+
+def _ejs_problem() -> str | None:
+    try:
+        version = metadata.version("yt-dlp-ejs")
+    except metadata.PackageNotFoundError:
+        return "yt-dlp-ejs is not installed"
+    if version != REQUIRED_EJS_VERSION:
+        return f"yt-dlp-ejs {REQUIRED_EJS_VERSION} is required (found {version})"
+    return None
 
 
 def _records(config: Config) -> list[tuple[str, str, str | None]]:
@@ -46,6 +81,9 @@ def doctor(config: Config) -> int:
     for executable in ("ffmpeg", "ffprobe", "fpcalc"):
         if not shutil.which(executable):
             problems.append(f"{executable} is not on PATH")
+    for problem in (_deno_problem(), _ejs_problem()):
+        if problem:
+            problems.append(problem)
     for label, path in (
         ("library", config.library_dir),
         ("staging", config.staging_dir),
