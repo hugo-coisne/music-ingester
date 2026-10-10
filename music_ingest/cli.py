@@ -85,6 +85,9 @@ def resolve_config(
 
 def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
+    if argv and argv[0] == 'watch':
+        from .watch import main as watch_main
+        return watch_main(argv[1:])
     if argv and argv[0] == 'discover':
         from .discovery.cli import main as discovery_main
         return discovery_main(argv[1:])

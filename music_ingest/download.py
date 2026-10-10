@@ -9,7 +9,8 @@ from mutagen.mp4 import MP4
 from .config import STAGING_DIR
 
 
-def download(video_id: str, staging_dir: Path = STAGING_DIR, timeout: float = 900) -> Path:
+def download(video_id: str, staging_dir: Path = STAGING_DIR, timeout: float = 900,
+             *, max_bytes: int | None = None) -> Path:
     """Prefer native AAC; normalize fallback audio to M4A before returning."""
     command = [
         sys.executable, "-m", "yt_dlp",
@@ -23,10 +24,13 @@ def download(video_id: str, staging_dir: Path = STAGING_DIR, timeout: float = 90
         "--embed-metadata",
         "--write-info-json",
         "--no-overwrites",
+        "--retries", "3", "--fragment-retries", "3", "--retry-sleep", "exp=1:8",
         "--print", "after_move:filepath",
         "-o", str(staging_dir / "%(id)s.%(ext)s"),
         f"https://music.youtube.com/watch?v={video_id}",
     ]
+    if max_bytes:
+        command[3:3] = ['--max-filesize', str(max_bytes)]
     result = subprocess.run(command, text=True, capture_output=True, timeout=timeout)
     if result.returncode != 0:
         raise RuntimeError(result.stderr.strip() or result.stdout.strip())

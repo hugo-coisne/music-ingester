@@ -65,3 +65,31 @@ une erreur API conserve son statut d'échec. Le motif de recommandation indique 
 période utilisée. Pas de graines artificielles ni de modification du compte Last.fm.
 Validation réelle : 25 suggestions, deux cycles sans doublon. La planification
 serveur attend encore le raccordement à la bibliothèque réelle et OpenSubsonic.
+
+## Surveillance et acquisition — nouvelle demande du 10 octobre
+
+La demande explicite d'import automatique des playlists YouTube Music et des
+recommandations remplace la restriction antérieure aux essais synthétiques.
+Pas de cookies, DRM ou contrôles d'accès contournés. Les échecs restent des échecs.
+Le compte ListenBrainz fourni est `Barge9757` ; ses playlists hebdomadaires publiques
+étaient vides au premier essai réel. Last.fm reste `macarena3897`.
+
+Le module `watch` réutilise le pipeline existant, avec snapshots des sources pour
+éviter qu'une source modifiée entre deux lectures produise un import incohérent.
+Liste d'IDs texte, une tâche systemd toutes les 15 minutes, renouvellement des
+recommandations tous les sept jours, queue/backoff et cache de tags en SQLite.
+Les erreurs d'un fournisseur n'effacent pas les derniers résultats corrects.
+
+Les miroirs OpenSubsonic appartiennent à un compte et à un jeton persisté avant
+création ; jamais de rapprochement par simple nom avec les playlists personnelles.
+Une création interrompue est reprise par nom temporaire unique. Le contenu antérieur
+est sauvegardé dans le journal avant modification. Aucun fichier musical n'est
+supprimé quand une piste quitte la source. Les nouvelles acquisitions restent
+conservées ; la rétention temporaire/promotion est encore une tâche distincte.
+
+Le worker monte la bibliothèque existante RO et uniquement `Managed Singles` RW.
+L'ancienne release d'ingestion reste récupérable, sans planificateur actif observé.
+Le réseau hôte sert seulement à joindre Navidrome sur 127.0.0.1 ; le worker n'écoute
+sur aucun port. HTTP n'est accepté que sur la boucle locale, secrets en corps POST.
+Pas de scan complet forcé de l'ancienne bibliothèque ; le rapport attend que le
+catalogue Navidrome confirme l'indexation des fichiers publiés.

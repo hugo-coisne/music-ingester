@@ -1,0 +1,46 @@
+# One-shot worker; never use `up` or a restart policy for this service.
+services:
+  watch:
+    image: ${WATCH_IMAGE:?Set the tested immutable image ID}
+    user: "${MUSIC_UID:-1000}:${MUSIC_GID:-1000}"
+    network_mode: host
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    cpus: 0.75
+    mem_limit: 768m
+    pids_limit: 96
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    volumes:
+      - type: bind
+        source: ${WATCH_ROOT}/playlists
+        target: /playlists
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: ${WATCH_ROOT:?Set automation directory}/config
+        target: /config
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: ${WATCH_ROOT}/state
+        target: /state
+        bind: {create_host_path: false}
+      - type: bind
+        source: ${WATCH_ROOT}/staging
+        target: /staging
+        bind: {create_host_path: false}
+      - type: bind
+        source: ${MUSIC_ROOT:?Set existing Navidrome music directory}
+        target: /music
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: ${MANAGED_MUSIC_ROOT:?Set dedicated singles directory}
+        target: /music/Managed Singles
+        bind: {create_host_path: false}
+    command: [watch, run, --config, /config/watch.toml, --apply]
+    logging:
+      driver: json-file
+      options: {max-size: 5m, max-file: "2"}

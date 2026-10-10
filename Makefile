@@ -39,3 +39,17 @@ discover-preview:
 	$(PYTHON) -m music_ingest discover --config discovery.toml --dry-run
 discovery-status:
 	$(PYTHON) -m music_ingest discover --config discovery.toml --status
+
+WATCH_CONFIG ?= watch.toml
+watch:
+	$(PYTHON) -m music_ingest watch run --config "$(WATCH_CONFIG)" --apply
+watch-preview:
+	$(PYTHON) -m music_ingest watch run --config "$(WATCH_CONFIG)"
+watch-status:
+	$(PYTHON) -m music_ingest watch status --config "$(WATCH_CONFIG)"
+playlist-add:
+	$(PYTHON) -m music_ingest watch add "$(PLAYLIST)" --config "$(WATCH_CONFIG)"
+playlist-remove:
+	$(PYTHON) -m music_ingest watch remove "$(PLAYLIST)" --config "$(WATCH_CONFIG)"
+playlist-list:
+	$(PYTHON) -m music_ingest watch list --config "$(WATCH_CONFIG)"

@@ -16,6 +16,31 @@ from tests.support import TemporaryTest, sample_metadata, track
 
 @unittest.skipUnless(shutil.which('ffmpeg') and shutil.which('ffprobe'), 'FFmpeg and ffprobe required')
 class AudioIntegrationTests(TemporaryTest):
+    def test_watch_synthetic_audio_to_mirror_and_source_membership_change(self):
+        from music_ingest import watch, watch_state
+        from tests.test_watch import FakeAPI
+        from contextlib import closing
+        (self.root / 'ids.txt').write_text('PL1234567890\n')
+        settings = dict(playlist_ids='ids.txt', acquisition_enabled=True,
+                        limits=dict(acquisitions=1, free_bytes=0), navidrome=dict(music_root='library'))
+        api = FakeAPI()
+        def catalog(root):
+            return {p.resolve(): 'verified-song' for p in root.rglob('*.m4a') if library.index_audio_file(p)}
+        api.catalog = catalog
+        client = self.client([track('synthetic')])
+        with closing(watch_state.connect(self.root / 'watch.db')) as db:
+            with patch.object(downloader, 'download', side_effect=lambda v, s, t, **kw: self.fake_download(v, s, t)) as fetch:
+                first = watch.cycle(settings, self.root, self.config, db, client, api, apply=True)
+                second = watch.cycle(settings, self.root, self.config, db, client, api, apply=True)
+                fetch.assert_called_once()
+            self.assertEqual(first['playlists'][0]['mirror']['playable'], 1)
+            self.assertFalse(second['playlists'][0]['mirror']['changed'])
+            client.get_playlist.return_value = dict(title='New source name', tracks=[])
+            third = watch.cycle(settings, self.root, self.config, db, client, api, apply=True)
+            self.assertEqual(third['playlists'][0]['mirror']['playable'], 0)
+            self.assertEqual(len(list(self.config.library_dir.rglob('*.m4a'))), 1)
+            self.assertEqual(db.execute('PRAGMA integrity_check').fetchone()[0], 'ok')
+
     def test_synthetic_ingestion_to_discovery_is_idempotent_and_reports_absent_track(self):
         from music_ingest.discovery import core
         recording = '526bd613-fddd-4bd6-9137-ab709ac74cab'

@@ -17,23 +17,24 @@ Mise à jour : 2026-10-10. Les critères ci-dessous restent ouverts jusqu'à pre
 | P2.1 | DONE | Verrou import, états persistants, publication sans écrasement et reprise | Tests existants |
 | P2.2 | DONE | Renforcer isolation sandbox, nettoyage sous verrou et CLI dry-run | Tests de non-régression |
 | P2.3 | DONE | Identifiants MBID/ISRC et déduplication conservatrice, limiter fingerprint de références | P2.2 |
-| P2.4 | TODO | Retry explicite, backoff borné, espace disponible et limites d'acquisition | P2.2 |
-| P2.5 | BLOCKED | Import réel autorisé sandbox, tags/pochettes/indexation puis second passage | Source et droits confirmés |
+| P2.4 | IN_PROGRESS | Retry/backoff et limites dans watch testés ; validation serveur en cours | P2.2 |
+| P2.5 | IN_PROGRESS | Import réel autorisé, tags/pochettes/indexation puis second passage | Demande d'acquisition reçue |
 | P3.1 | IN_PROGRESS | Contrat/adaptateurs Last.fm/ListenBrainz/fichiers locaux testés ; OpenSubsonic reste à faire | API officielles |
 | P3.2 | IN_PROGRESS | Historique SQLite/provenance/déduplication/exclusions/score faits ; cache HTTP et réconciliation d'identités restent à faire | P3.1 |
 | P3.3 | IN_PROGRESS | Preview/rapport/fixtures faits ; Last.fm réel validé, ListenBrainz réel reste à tester | P3.2 |
 | P3.4 | DONE | Clé Last.fm, repli historique complet, deux cycles réels de 25 suggestions sans doublon | Clé fournie et tests réels |
-| P4.1 | TODO | File d'acquisition avec adaptateurs de sources autorisées, simulation par défaut | P2, P3 |
-| P4.2 | TODO | Cycle hebdomadaire : 25 candidats, 10 acquisitions, un worker, limites stockage | P4.1 |
-| P4.3 | TODO | Playlists gérées idempotentes, IDs Navidrome vérifiés ; absents dans rapport séparé | P4.2 |
+| P4.1 | IN_PROGRESS | File et résolution conservative YouTube testées ; essais réels en cours | P2, P3 |
+| P4.2 | IN_PROGRESS | Cycle hebdomadaire et surveillance 15 min implémentés ; activation serveur à valider | P4.1 |
+| P4.3 | IN_PROGRESS | Miroirs idempotents et reprise testés ; API authentifiée réelle OK | P4.2 |
 | P4.4 | TODO | Favoris conservés, promotion temporaire→permanent, rétention explicite | P4.3 |
-| P4.5 | TODO | E2E sandbox : succès partiels, reprise, second passage sans doublon | P4.1–4 |
+| P4.5 | IN_PROGRESS | E2E synthétique passe ; E2E serveur restant et rétention pas encore implémentée | P4.1–4 |
+| P4.YT | IN_PROGRESS | Liste d'IDs surveillée, noms/ordre/ajouts/retraits reflétés dans Navidrome | Demande du 10 octobre |
 | P5.1 | TODO | Smart playlists et radios locales artiste/titre/genre | P3, P4 |
 | P5.2 | BLOCKED | Amperfy/Arpeggi/SubStreamer : streaming, favoris, hors ligne, reconnexion | P1.3–4 et iPhone |
 | P5.3 | TODO | Statut léger, formats limitant transcodage, vérification playlists hebdomadaires | P4 |
 | P6.1 | TODO | Lidarr optionnel, dossier albums distinct, listes artistes/profils qualité | P2 stabilisée |
 | P6.2 | IN_PROGRESS | Sauvegarde/restauration SQLite et configs, logs, opérations, rollback | P0.3 |
-| P6.3 | TODO | Timer verrouillé, rotation, mesures import RAM/CPU sur serveur | P4 |
+| P6.3 | IN_PROGRESS | Timer/Compose ponctuel et verrou fournis, Linger activé ; mesures et activation à suivre | P4 |
 | P6.4 | BLOCKED | Import réel d'album autorisé sans conflit avec ingester | Source d'albums autorisée |
 | P7 | BLOCKED | Architecture future vidéo seulement ; aucun déploiement/migration | Validation P0–P6 |
 

@@ -83,11 +83,31 @@ La plateforme complète P0–P6 n'est pas encore validée.
 
 ## Problèmes et interventions
 
+## Synchronisation — développement et tests du 10 octobre
+
+- Nouvelle demande : surveiller des IDs YouTube Music et acquérir automatiquement
+  les titres manquants ; la restriction précédente aux synthétiques est levée.
+- `watch`, `watch_state`, `subsonic` : liste modifiable, cache incrémental, acquisitions
+  bornées, reprise/backoff, miroirs avec propriété persistée et sauvegarde des contenus.
+- Réutilisation du pipeline et des profils ; nouvel exemple de configuration,
+  Compose ponctuel, unités systemd et commandes `music-playlists`/Makefile.
+- **113 tests passent en local**, incluant audio synthétique→publication→miroir,
+  second passage, changement de nom, source vide, erreurs partielles, interruption
+  après création distante, protection des playlists personnelles et cache incrémental.
+- API Navidrome réelle authentifiée avec le fichier privé fourni : ping OK, 5 playlists.
+- YouTube Music réel : playlist `music`, 202 titres reçus sur 202 annoncés.
+- ListenBrainz `Barge9757` répond, aucun résultat hebdomadaire disponible actuellement.
+- Serveur : dossiers d'automatisation neufs préparés, sauvegarde avant miroirs vérifiée
+  (7 fichiers), `Linger=yes` activé. Construction finale en cours ; timer pas encore activé.
+- Procédure : `docs/PLAYLIST_SYNC.md`. Validation d'acquisition et miroirs réels à suivre.
+
+## Interventions encore requises
+
 - Tailscale absent du serveur ; autorisation de compte et configuration privée requises.
-- Identifiants utilisateur Navidrome et essais physiques iPhone nécessaires pour
-  certifier streaming authentifié, favoris et écoute hors ligne.
-- Last.fm fonctionne ; ListenBrainz non configuré. Source d'acquisition réelle
-  toujours non autorisée : nouveaux imports limités à l'audio synthétique.
+- Identifiants Navidrome reçus, authentification validée. Essais physiques iPhone
+  encore nécessaires pour certifier favoris et écoute hors ligne.
+- Last.fm fonctionne ; ListenBrainz est configuré mais ne propose aucun résultat
+  hebdomadaire. Acquisition YouTube autorisée par la nouvelle demande, en validation.
 - L'instance existante écoute sur toutes les interfaces ; exposition externe inconnue.
 - Neuf fichiers référencés absents : retrouver leur origine avant tout scan ou purge.
 - Ne pas basculer la production tant que la copie n'est pas validée.

@@ -18,3 +18,5 @@ artifacts/
 *.local.env
 media-data/
 discovery.toml
+watch.toml
+config/youtube-playlists.txt
