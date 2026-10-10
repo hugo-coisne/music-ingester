@@ -111,6 +111,13 @@ def doctor(config: Config) -> int:
 
 def cleanup(config: Config, *, apply: bool = False, drop_errors: bool = False) -> int:
     """Select known sidecars; never remove unknown or in-flight artifacts."""
+    from .history import import_lock
+
+    with import_lock(config.db_path, read_only=not apply):
+        return _cleanup_locked(config, apply=apply, drop_errors=drop_errors)
+
+
+def _cleanup_locked(config: Config, *, apply: bool, drop_errors: bool) -> int:
     states = {video_id: state for video_id, state, _ in _records(config)}
     selected = []
     if config.staging_dir.is_dir():

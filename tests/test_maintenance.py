@@ -11,6 +11,11 @@ from tests.support import TemporaryTest
 
 
 class MaintenanceTests(TemporaryTest):
+    def test_cleanup_cannot_run_during_import(self):
+        with history.import_lock(self.config.db_path):
+            with self.assertRaisesRegex(RuntimeError, 'another sync'):
+                maintenance.cleanup(self.config, apply=True, drop_errors=True)
+
     def test_doctor_reports_missing_javascript_prerequisites(self):
         def executable(name):
             return None if name == "deno" else f"/usr/bin/{name}"

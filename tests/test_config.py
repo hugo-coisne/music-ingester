@@ -8,6 +8,28 @@ from tests.support import TemporaryTest
 
 
 class ConfigTests(TemporaryTest):
+    def test_sandbox_cannot_write_production_through_overrides_or_symlinks(self):
+        production = self.root / 'production'
+        production.mkdir()
+        alias = self.root / 'alias'
+        alias.symlink_to(production, target_is_directory=True)
+        for field, path in (
+            ('library_dir', production / 'library'),
+            ('staging_dir', production / 'library/subdir'),
+            ('db_path', production / 'staging/foreign.db'),
+            ('library_dir', alias / 'library'),
+            ('library_dir', self.root),
+        ):
+            with self.subTest(field=field, path=path):
+                with self.assertRaisesRegex(config.ConfigurationError, 'overlaps production'):
+                    config.build_config(document=self.document(), profile='sandbox',
+                                        config_path=self.root / 'config.toml', environment={},
+                                        cli_values={field: path})
+        with self.assertRaisesRegex(config.ConfigurationError, 'overlaps production'):
+            config.build_config(document=self.document(), profile='sandbox',
+                                config_path=self.root / 'config.toml',
+                                environment={'MUSIC_INGEST_DB_PATH': str(production / 'state.db')})
+
     def document(self):
         return {
             "settings": {"default_profile": "production"},

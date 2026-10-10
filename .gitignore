@@ -9,3 +9,11 @@ staging/
 state/
 environments/
 deploy/*.local.toml
+.env
+.env.*
+!.env.example
+backups/
+artifacts/
+*.local.json
+*.local.env
+media-data/

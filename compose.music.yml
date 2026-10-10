@@ -1,0 +1,52 @@
+name: home-music-preview
+
+services:
+  navidrome:
+    # Exact image audited on the existing server. Upgrade separately from migration.
+    image: deluan/navidrome:0.64.0@sha256:a384948b81bd1529986c5960169e7fc4fa00f46bde6bd517971a4c36671db2af
+    user: "${MUSIC_UID:?Set MUSIC_UID}:${MUSIC_GID:?Set MUSIC_GID}"
+    restart: unless-stopped
+    read_only: true
+    init: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 128
+    # Provisional limits based on 259 MiB idle on the actual 8 GiB server.
+    mem_limit: 768m
+    cpus: 1.0
+    ports:
+      - "127.0.0.1:${NAVIDROME_PORT:-4534}:4533"
+    environment:
+      ND_MUSICFOLDER: /music
+      ND_DATAFOLDER: /data
+      ND_CONFIGFILE: /data/navidrome.toml
+      ND_LOGLEVEL: info
+      ND_ENABLELOGREDACTING: "true"
+      ND_SCANNER_ENABLED: "false"
+      ND_ENABLEEXTERNALSERVICES: "false"
+      ND_ENABLEINSIGHTSCOLLECTOR: "false"
+      ND_LASTFM_ENABLED: "false"
+      ND_LISTENBRAINZ_ENABLED: "false"
+      ND_PLUGINS_ENABLED: "false"
+      ND_ENABLESHARING: "false"
+      ND_ENABLEGRAVATAR: "false"
+      ND_TRANSCODING_MAXCONCURRENT: "1"
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,size=128m,mode=1777
+    volumes:
+      - type: bind
+        source: ${NAVIDROME_DATA:?Use a separate restored data directory}
+        target: /data
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${MUSIC_LIBRARY:?Set the existing library path}
+        target: /music
+        read_only: true
+        bind:
+          create_host_path: false
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"

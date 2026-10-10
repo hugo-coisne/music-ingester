@@ -1,3 +1,10 @@
+# Home Music Platform
+
+Le projet continue comme socle de la plateforme musicale : [état réel](docs/STATUS.md),
+[feuille de route](docs/ROADMAP.md), [audit](docs/AUDIT.md),
+[installation](docs/INSTALL.md) et [sauvegarde/restauration](docs/BACKUP_RESTORE.md).
+Le moteur et ses commandes historiques ci-dessous restent conservés.
+
 # Music ingestion
 
 A Python CLI that imports a YouTube Music playlist into a tagged M4A library.

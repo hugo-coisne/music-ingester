@@ -33,7 +33,7 @@ def _add_configuration_options(
     )
     if sync_command:
         parser.add_argument(
-            "--list-only", action="store_true",
+            "--list-only", "--dry-run", action="store_true",
             help="Preview without writing files or import history",
         )
     parser.add_argument("--library-dir", type=Path)
@@ -102,7 +102,7 @@ def main(argv: list[str] | None = None) -> int:
             if command == "doctor":
                 return maintenance.doctor(config)
             return maintenance.status(config)
-        except (ConfigurationError, OSError, sqlite3.DatabaseError) as exc:
+        except (ConfigurationError, OSError, RuntimeError, sqlite3.DatabaseError) as exc:
             parser.error(str(exc))
 
     parser = build_parser()
