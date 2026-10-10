@@ -121,6 +121,36 @@ class DiscoveryTests(TemporaryTest):
 
 
 class AdapterTests(TemporaryTest):
+    def test_lastfm_falls_back_to_full_history_when_recent_chart_is_empty(self):
+        transport = Mock()
+        transport.json.side_effect = [
+            {'toptracks': {'track': []}},
+            {'lovedtracks': {'track': []}},
+            {'toptracks': {'track': [{'artist': {'name': 'Seed'}, 'name': 'Old Favorite'}]}},
+            {'similartracks': {'track': [{'artist': {'name': 'Air'}, 'name': 'Song', 'match': '0.8'}]}},
+        ]
+        result = list(providers.LastFM('user', 'secret', transport).candidates())
+        self.assertEqual(len(result), 1)
+        self.assertIn('period=overall', result[0].reason)
+        self.assertEqual(transport.json.call_args_list[2].kwargs['data']['period'], 'overall')
+
+    def test_lastfm_without_any_listening_history_does_not_invent_seeds(self):
+        transport = Mock()
+        transport.json.side_effect = [
+            {'toptracks': {'track': []}}, {'lovedtracks': {'track': []}},
+            {'toptracks': {'track': []}},
+        ]
+        self.assertEqual(list(providers.LastFM('user', 'secret', transport).candidates()), [])
+        self.assertEqual(transport.json.call_count, 3)
+
+    def test_lastfm_api_failure_does_not_trigger_history_fallback(self):
+        transport = Mock()
+        transport.json.return_value = {'error': 10, 'message': 'untrusted response SECRET'}
+        report = core.collect([providers.LastFM('user', 'secret', transport)], {})
+        self.assertEqual(report['providers']['lastfm'], 'failed')
+        self.assertNotIn('SECRET', json.dumps(report))
+        self.assertEqual(transport.json.call_count, 1)
+
     def test_lastfm_uses_user_seeds_and_post_body_credentials(self):
         transport = Mock()
         transport.json.side_effect = [
@@ -131,6 +161,8 @@ class AdapterTests(TemporaryTest):
         ]
         result = list(providers.LastFM('user', 'secret', transport).candidates())
         self.assertEqual(result[0].recording_mbid, MBID)
+        self.assertEqual(transport.json.call_count, 3)  # no overall lookup when recent seeds exist
+        self.assertIn('period=3month', result[0].reason)
         for call in transport.json.call_args_list:
             self.assertEqual(call.args[0], 'POST')
             self.assertNotIn('secret', call.args[1])

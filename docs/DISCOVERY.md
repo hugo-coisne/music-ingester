@@ -12,9 +12,10 @@ make discover          # conserve candidats et rapport SQLite ; aucun téléchar
 make discovery-status  # dernier rapport, sans appel externe
 ```
 
-Le fichier local de cette session est préparé pour le compte Last.fm fourni par
-l'utilisateur. La clé API manque : le résultat attendu est une erreur explicite et
-zéro recommandation, pas une liste inventée. Obtenir sa clé depuis
+Le fichier local de cette session est configuré pour le compte Last.fm fourni par
+l'utilisateur. La connexion réelle a été validée le 2026-10-10 : deux cycles ont
+conservé les mêmes 25 suggestions, sans doublon ni erreur. Pour une réinstallation,
+obtenir sa clé depuis
 [Last.fm API](https://www.last.fm/api/account/create), puis enregistrer seulement
 sa valeur dans `state/lastfm-api-key`, permissions `chmod 600 state/lastfm-api-key`.
 Ne pas fournir le secret dans le chat. `LASTFM_API_KEY` dans l'environnement est
@@ -23,6 +24,7 @@ Ne pas fournir le secret dans le chat. `LASTFM_API_KEY` dans l'environnement est
 ## Adaptateurs et classement
 
 - Last.fm : [top tracks](https://www.last.fm/api/show/user.getTopTracks) sur trois mois
+  (repli sur l'historique complet si ce classement est vide)
   et [favoris](https://www.last.fm/api/show/user.getLovedTracks), puis
   [titres similaires](https://www.last.fm/api/show/track.getSimilar). Maximum dix
   graines, 25 voisins chacune. Score normalisé `match / (1 + match)`.
@@ -56,12 +58,23 @@ code de sortie est non nul pour permettre le diagnostic du fonctionnement dégra
 Les erreurs brutes susceptibles de contenir des credentials ne sont pas enregistrées.
 
 Les adaptateurs ont des tests simulés. Last.fm utilise un corps POST pour éviter
-les clés dans les URLs : sa compatibilité réelle doit encore être vérifiée avec
-la clé utilisateur. Les résultats API n'ont pas été validés sur Internet. Le cache
+les clés dans les URLs : cette méthode et les recommandations ont aussi été
+validées sur l'API réelle avec la clé utilisateur. ListenBrainz reste validé
+uniquement avec des fixtures. Le cache
 actuel est l'historique des candidats/rapports ; il ne dispense pas encore des appels
 HTTP répétés. Une évolution d'identité texte→MBID peut laisser un ancien candidat
 dans l'historique ; les playlists futures devront utiliser le rapport du cycle et
 une réconciliation d'identités, pas toutes les anciennes lignes.
+
+Le compte testé ne disposait d'aucune écoute récente sur trois mois ni de favoris
+Last.fm, mais son historique complet contenait 2700 écoutes. Le repli utilise cet
+historique réel ; sa provenance `period=overall` figure dans chaque suggestion.
+Un compte sans aucune écoute ne produit toujours aucun résultat. Une erreur API
+n'est pas interprétée comme un historique vide.
+
+Les 25 résultats du test sont `unavailable` dans les deux fichiers de la sandbox.
+Cela ne prouve pas leur absence de la bibliothèque complète du serveur. Le rapport
+personnel se trouve sous `artifacts/lastfm-recommendations-20261010.md`, ignoré par Git.
 
 ## Planification préparée
 

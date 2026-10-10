@@ -32,7 +32,7 @@ La plateforme complète P0–P6 n'est pas encore validée.
   4001 annotations et 3620 media_file. Intégrité SQLite OK.
 - **81 tests réussis** après les corrections ; Compose validé localement et sur serveur.
 - L'utilisateur autorise seulement les nouveaux imports synthétiques pour le moment.
-- Fournisseur choisi : Last.fm ; nom public fourni en conversation, clé API non fournie.
+- Fournisseur choisi : Last.fm ; clé désormais fournie dans le fichier privé prévu.
 
 ## Incrément Discovery / déduplication
 
@@ -43,9 +43,8 @@ La plateforme complète P0–P6 n'est pas encore validée.
   `--status` lit le dernier rapport et recontrôle les fichiers. Aucune acquisition.
 - MBID d'enregistrement/ISRC prioritaires, tags M4A conservés et relus. Fingerprinting
   de l'ancienne bibliothèque limité à huit fichiers supplémentaires par cycle.
-- Configuration personnelle `discovery.toml` préparée et ignorée par Git. Le fichier
-  de clé API est attendu ; l'utilisateur prévoit de le configurer. Pas d'appel Last.fm
-  réel réussi à ce stade.
+- Configuration personnelle `discovery.toml` préparée et ignorée par Git. Clé API
+  fournie et connexion réelle validée ; voir l'incrément ci-dessous.
 - Templates systemd hebdomadaires fournis mais **non installés**. Verrou de cycle
   et verrou de base testés, pas de nouveau processus Python résident.
 - **98 tests réussis** sur Python local 3.10 et image Docker Python 3.12. Construction
@@ -62,17 +61,39 @@ La plateforme complète P0–P6 n'est pas encore validée.
 - Diagnostic catalogue : neuf chemins ne correspondent plus à un fichier. Snapshot :
   30 annotations favorites, somme des compteurs d'écoute 10601. Aucune purge.
 
+## Validation réelle Last.fm — 2026-10-10
+
+- Clé lue dans le fichier ignoré `state/lastfm-api-key`, permissions 0600. Secret
+  jamais affiché, transmis uniquement dans le corps HTTPS, absent des rapports/Git.
+- Compte reconnu : 2700 écoutes, 1692 titres ; classement des trois derniers mois
+  et favoris Last.fm vides. Ajout du repli sur l'historique complet, provenance explicite.
+- Deux cycles `discover --config discovery.toml --apply` réussis : 25 suggestions
+  chacun, mêmes identités, 25 lignes candidates uniques, intégrité SQLite `ok`.
+- Un premier essai bloqué par le réseau sandbox est conservé comme échec dans
+  l'historique. Les deux succès réels suivent ; aucun échec n'est masqué.
+- Les 25 suggestions sont indisponibles dans la sandbox (deux fichiers). Leur
+  présence sur le serveur n'est pas encore vérifiée. Aucun téléchargement ni
+  scrobbling ni création de playlist n'a été effectué.
+- Rapport privé : `artifacts/lastfm-recommendations-20261010.md`.
+- **101 tests réussis** en local et dans l'image Docker, dont repli historique,
+  compte vide et distinction entre erreur API et absence de résultats.
+- Image locale `music-ingester:home-music-lastfm` :
+  `sha256:a218ae7ceedbb64033513cefc882dbd5bddf44e3dac8520dec1ca01f83aae9cd`.
+  Pas de remplacement de l'ingester de production ni d'activation de timer.
+
 ## Problèmes et interventions
 
 - Tailscale absent du serveur ; autorisation de compte et configuration privée requises.
 - Identifiants utilisateur Navidrome et essais physiques iPhone nécessaires pour
   certifier streaming authentifié, favoris et écoute hors ligne.
-- Fournisseurs de recommandations et source d'acquisition autorisée à configurer.
+- Last.fm fonctionne ; ListenBrainz non configuré. Source d'acquisition réelle
+  toujours non autorisée : nouveaux imports limités à l'audio synthétique.
 - L'instance existante écoute sur toutes les interfaces ; exposition externe inconnue.
 - Neuf fichiers référencés absents : retrouver leur origine avant tout scan ou purge.
 - Ne pas basculer la production tant que la copie n'est pas validée.
 
-Prochaines actions : tester Last.fm lorsque le fichier de clé sera prêt, lecture
-Navidrome authentifiée et accès privé, adaptateur OpenSubsonic Discovery, cache HTTP,
+Prochaines actions : lecture Navidrome authentifiée et accès privé, adaptateur
+OpenSubsonic Discovery, cache HTTP,
 file d'acquisition sandbox et synchronisation des playlists. Ni accès iOS ni source
-externe ne sont validés par fixtures. P4–P6 restent largement à réaliser, P7 suspendue.
+externe ne sont déduits des fixtures ; Last.fm dispose maintenant d'une preuve réelle.
+P4–P6 restent largement à réaliser, P7 suspendue.

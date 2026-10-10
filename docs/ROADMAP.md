@@ -21,7 +21,8 @@ Mise à jour : 2026-10-10. Les critères ci-dessous restent ouverts jusqu'à pre
 | P2.5 | BLOCKED | Import réel autorisé sandbox, tags/pochettes/indexation puis second passage | Source et droits confirmés |
 | P3.1 | IN_PROGRESS | Contrat/adaptateurs Last.fm/ListenBrainz/fichiers locaux testés ; OpenSubsonic reste à faire | API officielles |
 | P3.2 | IN_PROGRESS | Historique SQLite/provenance/déduplication/exclusions/score faits ; cache HTTP et réconciliation d'identités restent à faire | P3.1 |
-| P3.3 | IN_PROGRESS | Preview/rapport et fixtures/pannes partiels faits ; test API réel attend la clé Last.fm | P3.2 |
+| P3.3 | IN_PROGRESS | Preview/rapport/fixtures faits ; Last.fm réel validé, ListenBrainz réel reste à tester | P3.2 |
+| P3.4 | DONE | Clé Last.fm, repli historique complet, deux cycles réels de 25 suggestions sans doublon | Clé fournie et tests réels |
 | P4.1 | TODO | File d'acquisition avec adaptateurs de sources autorisées, simulation par défaut | P2, P3 |
 | P4.2 | TODO | Cycle hebdomadaire : 25 candidats, 10 acquisitions, un worker, limites stockage | P4.1 |
 | P4.3 | TODO | Playlists gérées idempotentes, IDs Navidrome vérifiés ; absents dans rapport séparé | P4.2 |

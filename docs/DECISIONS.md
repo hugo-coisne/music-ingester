@@ -49,10 +49,19 @@ du reverse proxy, du pare-feu et des redirections routeur nécessaire avant conc
 
 L'utilisateur choisit Last.fm et n'autorise pour l'instant que l'audio synthétique
 pour les nouveaux imports. Discovery collecte/enregistre seulement des suggestions.
-La clé sera lue dans un fichier privé ignoré ou l'environnement ; requêtes POST
-pour éviter les secrets dans les URLs, compatibilité réelle encore à valider.
+La clé est lue dans un fichier privé ignoré ou l'environnement ; requêtes POST
+pour éviter les secrets dans les URLs, compatibilité validée sur l'API réelle.
 L'adaptateur ListenBrainz utilise les playlists publiques createdfor, sans imposer
 les endpoints de recommandation expérimentaux. Aucun compte n'est créé.
 Les scores additionnent des contributions traçables ; aucune prédiction IA.
 Les références sans preuve locale restent indisponibles et les ambiguïtés explicites.
 Pas de timer activé avant validation des comptes et du cycle réel.
+
+## Last.fm : compte sans écoutes récentes
+
+Le classement sur trois mois était vide, malgré un historique de 2700 écoutes.
+Repli sur `period=overall` uniquement lorsque le classement récent est vide ;
+une erreur API conserve son statut d'échec. Le motif de recommandation indique la
+période utilisée. Pas de graines artificielles ni de modification du compte Last.fm.
+Validation réelle : 25 suggestions, deux cycles sans doublon. La planification
+serveur attend encore le raccordement à la bibliothèque réelle et OpenSubsonic.

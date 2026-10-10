@@ -67,8 +67,7 @@ class LastFM:
     def call(self, method, **params):
         if not self.username or not self.api_key:
             raise ProviderError('Last.fm username and API key required')
-        # POST keeps the API key out of URLs. Real-service compatibility is an
-        # explicit integration gate until a user-owned API key is configured.
+        # POST keeps the API key out of URLs; verified against the real API.
         data = self.transport.json('POST', 'https://ws.audioscrobbler.com/2.0/',
                                    data=dict(method=method, api_key=self.api_key,
                                              format='json', **params))
@@ -79,9 +78,18 @@ class LastFM:
     def candidates(self):
         top = self.call('user.getTopTracks', user=self.username, period='3month', limit=5)
         loved = self.call('user.getLovedTracks', user=self.username, limit=5)
-        seeds = rows(top['toptracks'].get('track')) + rows(loved['lovedtracks'].get('track'))
+        top_tracks = rows(top['toptracks'].get('track'))
+        period = '3month'
+        if not top_tracks:
+            # An inactive account may still have useful historical listening data.
+            # An API failure must propagate rather than masquerade as an empty chart.
+            period = 'overall'
+            top = self.call('user.getTopTracks', user=self.username, period=period, limit=5)
+            top_tracks = rows(top['toptracks'].get('track'))
+        seeds = [(track, f'user.getTopTracks period={period}') for track in top_tracks]
+        seeds += [(track, 'user.getLovedTracks') for track in rows(loved['lovedtracks'].get('track'))]
         seen = set()
-        for seed in seeds[:10]:
+        for seed, origin in seeds[:10]:
             artist = seed.get('artist', {}).get('name')
             title = seed.get('name')
             if not artist or not title or (artist, title) in seen:
@@ -95,7 +103,7 @@ class LastFM:
                     continue
                 yield Candidate(self.name, item['artist']['name'], item['name'],
                                 raw_score / (1 + raw_score),
-                                f'Similar to {artist} — {title}; Last.fm match={raw_score}',
+                                f'Similar to {artist} — {title}; seed={origin}; Last.fm match={raw_score}',
                                 recording_mbid=identity.mbid(item.get('mbid')))
 
 
