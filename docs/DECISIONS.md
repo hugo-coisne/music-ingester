@@ -20,7 +20,8 @@ sur la copie de validation. La production reste sur 4533 jusqu'à une bascule au
 API SQLite backup : inclut les transactions validées du WAL. Copie de fichier brute
 insuffisante (WAL Navidrome observé ~169 Mo). SHA-256 et integrity_check pour chaque
 base ; restauration exclusivement dans un nouveau dossier. Permissions 0700/0600.
-Ce n'est pas une sauvegarde des 16,9 Go de musique ni une sauvegarde hors machine.
+Ce n'est pas une sauvegarde des 16,9 Go de musique. Une copie supplémentaire du
+snapshot serveur a été transférée sur le poste puis vérifiée.
 
 ## Séparation des responsabilités et stockage
 
@@ -43,3 +44,15 @@ Préparer Tailscale, sans installer/authentifier ou modifier le pare-feu automat
 La disponibilité gratuite et les clients iOS seront vérifiés lors de cette étape.
 L'écoute sur toutes les interfaces ne prouve pas une exposition Internet : audit
 du reverse proxy, du pare-feu et des redirections routeur nécessaire avant conclusion.
+
+## Discovery : développement sans acquisition
+
+L'utilisateur choisit Last.fm et n'autorise pour l'instant que l'audio synthétique
+pour les nouveaux imports. Discovery collecte/enregistre seulement des suggestions.
+La clé sera lue dans un fichier privé ignoré ou l'environnement ; requêtes POST
+pour éviter les secrets dans les URLs, compatibilité réelle encore à valider.
+L'adaptateur ListenBrainz utilise les playlists publiques createdfor, sans imposer
+les endpoints de recommandation expérimentaux. Aucun compte n'est créé.
+Les scores additionnent des contributions traçables ; aucune prédiction IA.
+Les références sans preuve locale restent indisponibles et les ambiguïtés explicites.
+Pas de timer activé avant validation des comptes et du cycle réel.

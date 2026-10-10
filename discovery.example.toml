@@ -1,0 +1,25 @@
+# All provider calls are read-only. --apply only stores suggestions; no acquisition.
+[storage]
+db_path = "environments/sandbox/state/discovery.db"
+libraries = ["environments/sandbox/library"]
+
+[lastfm]
+enabled = false
+username = "YOUR_PUBLIC_USERNAME"
+# API key is read from LASTFM_API_KEY or this private (0600) ignored text file.
+api_key_file = "state/lastfm-api-key"
+
+[listenbrainz]
+enabled = false
+username = "YOUR_PUBLIC_USERNAME"
+
+[local]
+enabled = false
+seed_artists = []
+
+[ranking]
+limit = 25
+blocked_artists = []
+# Exact normalized "artist - title", including version qualifiers.
+blocked_tracks = []
+weights = {lastfm = 1.0, listenbrainz = 1.0, local = 0.5}

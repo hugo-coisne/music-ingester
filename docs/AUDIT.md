@@ -22,7 +22,8 @@ Mesures ponctuelles à faible activité, pas un benchmark d'import.
 
 Aucun service vidéo actif sur ce serveur à l'inventaire Docker.
 Ces services annexes ne sont pas modifiés. Pas de timer music-ingest dans
-`systemctl list-timers --all` système ; crontabs et timers utilisateur restent à vérifier.
+`systemctl list-timers --all` système ; aucun dans les timers utilisateur ni mention
+de music-ingest dans la crontab utilisateur au contrôle complémentaire. Nginx inactif.
 Tailscale absent. Le pare-feu et les redirections NAT restent à vérifier.
 
 ## Données
@@ -32,8 +33,9 @@ Tailscale absent. Le pare-feu et les redirections NAT restent à vérifier.
 - Serveur musique : 3 615 fichiers, 16 869 641 035 octets : 3 601 MP3, 10 M4A,
   3 smart playlists `.nsp`, 1 `.cp`. Aucun fichier déplacé ni retagué.
 - SQLite Navidrome : intégrité OK, 3 620 media_file, 2 user, 5 playlist,
-  4 001 annotation, 0 playqueue, 1 library. Écart de neuf entrées catalogue à
-  diagnostiquer, sans conclure à une perte ni purger les entrées.
+  4 001 annotation, 0 playqueue, 1 library. Contrôle complémentaire des chemins :
+  9 fichiers référencés absents, aucune purge. 30 annotations favorites et somme
+  des compteurs d'écoute 10 601 dans le snapshot ; origine des absences à retrouver.
 - SQLite ingest serveur : intégrité OK, 11 imports. Quatre anciennes sauvegardes
   intègres sont présentes. Une release active existe déjà sous `current`.
 - WAL Navidrome observé : 168 812 912 octets ; sauvegarde SQLite en ligne nécessaire.
@@ -78,5 +80,6 @@ Local : `backups/p0-local-20261010`, 3 bases et 3 configurations, 6 fichiers.
 Serveur : `…/home-music/backups/p0-20261010`, 2 bases et 6 configurations, 8 fichiers.
 SHA-256 et `integrity_check` via `music_ingest.backup`. Les manifestes avec chemins
 et empreintes restent dans ces dossiers privés ignorés par Git.
-Ces snapshots ne sauvegardent ni l'audio ni les caches et ne protègent pas contre
-la perte du disque. Une deuxième copie sur support indépendant reste à organiser.
+Ces snapshots ne sauvegardent ni l'audio ni les caches. La sauvegarde serveur a aussi
+été copiée sur le poste (`backups/server-p0-20261010`) et vérifiée : huit fichiers OK.
+Il reste à protéger les fichiers musicaux sur un support indépendant.

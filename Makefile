@@ -2,7 +2,7 @@ PYTHON ?= .venv/bin/python
 PROFILE ?= sandbox
 COMPOSE = docker compose --env-file .env -f compose.music.yml
 
-.PHONY: test doctor status install music-config start stop logs backup restore verify-backup preview retry
+.PHONY: test doctor status install music-config start stop logs backup restore verify-backup preview retry discover discover-preview discovery-status
 test:
 	$(PYTHON) -m unittest discover -s tests -v
 doctor:
@@ -33,3 +33,9 @@ verify-backup:
 	$(PYTHON) -m music_ingest.backup verify "$(SOURCE)"
 restore:
 	$(PYTHON) -m music_ingest.backup restore "$(SOURCE)" "$(DEST)"
+discover:
+	$(PYTHON) -m music_ingest discover --config discovery.toml --apply
+discover-preview:
+	$(PYTHON) -m music_ingest discover --config discovery.toml --dry-run
+discovery-status:
+	$(PYTHON) -m music_ingest discover --config discovery.toml --status

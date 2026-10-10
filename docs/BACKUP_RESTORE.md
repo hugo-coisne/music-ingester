@@ -24,6 +24,8 @@ Preuves du 2026-10-10 : sauvegarde/restauration locale de 6 fichiers, serveur de
 8 fichiers. Copie Navidrome démarrée depuis ce snapshot ; comparaisons exactes de
 comptes, playlists, associations et annotations. Test automatisé de sauvegarde
 d'une base active WAL, corruption, traversée de chemin et refus d'écrasement.
+La copie serveur est aussi disponible et vérifiée sur le poste sous
+`backups/server-p0-20261010`. Aucun fichier audio n'est inclus.
 
 ## Restauration de production
 

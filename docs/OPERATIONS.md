@@ -6,6 +6,8 @@
 | Tests hors réseau | `make test` |
 | Diagnostic ingestion | `make doctor PROFILE=sandbox` |
 | État ingestion | `make status PROFILE=production` |
+| Prévisualiser / conserver les suggestions | `make discover-preview` / `make discover` |
+| Dernier rapport de recommandations | `make discovery-status` |
 | Prévisualiser une playlist | `make preview PLAYLIST=ID PROFILE=sandbox` |
 | Reprendre une playlist autorisée | `make retry PLAYLIST=ID PROFILE=sandbox` |
 | Valider / démarrer Navidrome parallèle | `make music-config` / `make start` |

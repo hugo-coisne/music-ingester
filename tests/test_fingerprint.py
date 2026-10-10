@@ -5,10 +5,24 @@ import subprocess
 import unittest
 from unittest.mock import patch
 
-from music_ingest.fingerprint import fingerprint
+from music_ingest.fingerprint import fingerprint, FingerprintMatcher
+from tempfile import TemporaryDirectory
 
 
 class FingerprintTests(unittest.TestCase):
+    def test_existing_library_fingerprints_have_a_per_run_budget(self):
+        with TemporaryDirectory() as directory:
+            paths = [Path(directory) / str(i) for i in range(20)]
+            for path in paths:
+                path.write_bytes(b'fixture')
+            matcher = FingerprintMatcher({'song': [dict(path=p, duration=180) for p in paths]}, max_existing=2)
+            target = Path(directory) / 'target'
+            with patch('music_ingest.fingerprint.shutil.which', return_value='fpcalc'), \
+                 patch('music_ingest.fingerprint.fingerprint', side_effect=lambda p: str(p)) as calculate:
+                self.assertIsNone(matcher.find(target, 180))
+                self.assertIsNone(matcher.find(target, 180))
+                self.assertEqual(calculate.call_count, 3)  # target + two existing files total
+
     def result(self, code, stdout, stderr=""):
         with patch("music_ingest.fingerprint.shutil.which", return_value="/usr/bin/fpcalc"), \
              patch("music_ingest.fingerprint.subprocess.run", return_value=

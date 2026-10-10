@@ -5,6 +5,7 @@ from pathlib import Path
 from mutagen.mp4 import MP4, MP4FreeForm
 
 from .models import APIData, TrackMetadata
+from . import identity
 
 
 def artist_names(track: APIData) -> list[str]:
@@ -27,6 +28,8 @@ def build_track_metadata(track: APIData, album_info: APIData | None) -> TrackMet
         "track_number": None,
         "track_total": None,
         "album_artist": None,
+        "recording_mbid": identity.mbid(track.get('recording_mbid')),
+        "isrc": identity.isrc(track.get('isrc')),
     }
     if not album_info:
         return metadata
@@ -68,4 +71,7 @@ def write_metadata(filepath: Path, metadata: TrackMetadata, video_id: str) -> No
         else:
             audio[tag] = value
     audio["----:com.apple.iTunes:YOUTUBE_VIDEO_ID"] = [MP4FreeForm(video_id.encode("utf-8"))]
+    for field, atom in (('recording_mbid', 'MusicBrainz Track Id'), ('isrc', 'ISRC')):
+        if metadata.get(field):
+            audio[f'----:com.apple.iTunes:{atom}'] = [MP4FreeForm(metadata[field].encode('utf-8'))]
     audio.save()

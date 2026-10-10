@@ -4,6 +4,8 @@ Le projet continue comme socle de la plateforme musicale : [état réel](docs/ST
 [feuille de route](docs/ROADMAP.md), [audit](docs/AUDIT.md),
 [installation](docs/INSTALL.md) et [sauvegarde/restauration](docs/BACKUP_RESTORE.md).
 Le moteur et ses commandes historiques ci-dessous restent conservés.
+Le [module Discovery](docs/DISCOVERY.md) fournit une commande de recommandations
+avec simulation par défaut ; les acquisitions automatiques restent désactivées.
 
 # Music ingestion
 

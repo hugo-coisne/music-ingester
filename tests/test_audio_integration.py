@@ -16,6 +16,36 @@ from tests.support import TemporaryTest, sample_metadata, track
 
 @unittest.skipUnless(shutil.which('ffmpeg') and shutil.which('ffprobe'), 'FFmpeg and ffprobe required')
 class AudioIntegrationTests(TemporaryTest):
+    def test_synthetic_ingestion_to_discovery_is_idempotent_and_reports_absent_track(self):
+        from music_ingest.discovery import core
+        recording = '526bd613-fddd-4bd6-9137-ab709ac74cab'
+        value = dict(track(), recording_mbid=recording, isrc='USABC1200001')
+        client = self.client([value])
+        with patch.object(downloader, 'download', side_effect=self.fake_download) as download:
+            self.assertEqual(pipeline.run_sync(client, 'synthetic', self.config), 0)
+            self.assertEqual(pipeline.run_sync(client, 'synthetic', self.config), 0)
+        download.assert_called_once()
+        index = library.build_library_index(self.config.library_dir)
+        item = next(iter(index.values()))[0]
+        self.assertEqual(item['recording_mbid'], recording)
+        self.assertEqual(item['isrc'], 'USABC1200001')
+
+        class FixtureProvider:
+            name = 'fixture'
+            def candidates(self):
+                yield core.Candidate('fixture', 'Air', 'Song', 1, 'synthetic fixture', recording_mbid=recording)
+                yield core.Candidate('fixture', 'Fixture Artist', 'Unavailable', 0.5, 'synthetic missing candidate')
+
+        db = self.root / 'discovery.db'
+        for _ in range(2):
+            report = core.collect([FixtureProvider()], index)
+            core.save(db, report)
+        self.assertEqual([c['status'] for c in report['candidates']], ['available', 'unavailable'])
+        self.assertFalse(report['acquisition_enabled'])
+        with sqlite3.connect(db) as connection:
+            self.assertEqual(connection.execute('select count(*) from candidates').fetchone()[0], 2)
+        self.assertEqual(len(list(self.config.library_dir.rglob('*.m4a'))), 1)
+
     def setUp(self):
         super().setUp()
         self.fixture = self.root / 'fixture.m4a'

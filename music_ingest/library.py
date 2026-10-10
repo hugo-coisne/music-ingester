@@ -7,6 +7,7 @@ from pathlib import Path
 from mutagen import File as MutagenFile
 
 from .metadata import artist_names
+from . import identity
 from .models import APIData, DuplicateMatch, LibraryIndex, LibraryItem
 
 AUDIO_EXTENSIONS = {".mp3", ".m4a", ".flac", ".ogg", ".opus", ".wav"}
@@ -43,11 +44,19 @@ def index_audio_file(path: Path) -> LibraryItem | None:
         artists = audio.tags.get("artist", [])
         if not titles or not artists:
             return None
+        isrc_value = (audio.tags.get('isrc') or [None])[0]
+        if isrc_value is None and path.suffix.lower() == '.m4a':
+            # EasyMP4 exposes MusicBrainz IDs but not the common freeform ISRC atom.
+            from mutagen.mp4 import MP4
+            values = MP4(path).get('----:com.apple.iTunes:ISRC', [])
+            isrc_value = bytes(values[0]).decode('utf-8', errors='replace') if values else None
         return {
             "path": path,
             "title": titles[0],
             "artists": artists,
             "duration": float(audio.info.length),
+            "recording_mbid": identity.mbid((audio.tags.get('musicbrainz_trackid') or [None])[0]),
+            "isrc": identity.isrc(isrc_value),
         }
     except Exception:
         return None
@@ -83,6 +92,28 @@ def artists_match(track: APIData, library_item: LibraryItem) -> bool:
 
 
 def find_existing_track(track: APIData, library_index: LibraryIndex) -> DuplicateMatch | None:
+    requested_mbid = identity.mbid(track.get('recording_mbid'))
+    requested_isrc = identity.isrc(track.get('isrc'))
+    if requested_mbid or requested_isrc:
+        checked_ids = set()
+        for items in library_index.values():
+            for item in items:
+                if item['path'] in checked_ids or not item['path'].is_file():
+                    continue
+                checked_ids.add(item['path'])
+                # Conflicting recording IDs are stronger evidence than text/ISRC.
+                if requested_mbid and item.get('recording_mbid') and requested_mbid != item['recording_mbid']:
+                    continue
+                strong = (requested_mbid and requested_mbid == item.get('recording_mbid')) or (
+                    requested_isrc and requested_isrc == item.get('isrc'))
+                if strong:
+                    supplied = track.get('duration_seconds')
+                    try:
+                        delta = abs(float(supplied) - item['duration']) if supplied is not None else 0.0
+                    except (ValueError, TypeError):
+                        continue
+                    if delta <= DURATION_TOLERANCE_SECONDS:
+                        return {**item, 'duration_delta': delta}
     # Duration is mandatory evidence, even when title and artist match exactly.
     try:
         duration = float(track.get("duration_seconds"))
@@ -96,6 +127,10 @@ def find_existing_track(track: APIData, library_index: LibraryIndex) -> Duplicat
             if path in checked or not path.is_file():
                 continue
             checked.add(path)
+            if requested_mbid and item.get('recording_mbid') and requested_mbid != item['recording_mbid']:
+                continue
+            if requested_isrc and item.get('isrc') and requested_isrc != item['isrc']:
+                continue
             if not artists_match(track, item):
                 continue
             delta = abs(item["duration"] - duration)

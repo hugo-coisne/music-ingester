@@ -16,12 +16,12 @@ Mise à jour : 2026-10-10. Les critères ci-dessous restent ouverts jusqu'à pre
 | P1.5 | BLOCKED | Scrobbling Last.fm/ListenBrainz vérifié, sans double comptage | Comptes autorisés |
 | P2.1 | DONE | Verrou import, états persistants, publication sans écrasement et reprise | Tests existants |
 | P2.2 | DONE | Renforcer isolation sandbox, nettoyage sous verrou et CLI dry-run | Tests de non-régression |
-| P2.3 | TODO | Identifiants MBID/ISRC et déduplication conservatrice, limiter fingerprint de références | P2.2 |
+| P2.3 | DONE | Identifiants MBID/ISRC et déduplication conservatrice, limiter fingerprint de références | P2.2 |
 | P2.4 | TODO | Retry explicite, backoff borné, espace disponible et limites d'acquisition | P2.2 |
 | P2.5 | BLOCKED | Import réel autorisé sandbox, tags/pochettes/indexation puis second passage | Source et droits confirmés |
-| P3.1 | TODO | Contrat candidats et adaptateurs Last.fm/ListenBrainz/local, délais et erreurs isolées | API officielles |
-| P3.2 | TODO | Cache SQLite, provenance, déduplication intersources, exclusions, score explicable | P3.1 |
-| P3.3 | TODO | Preview/rapport, tests fixtures et panne partielle, validation API réelle séparée | P3.2 |
+| P3.1 | IN_PROGRESS | Contrat/adaptateurs Last.fm/ListenBrainz/fichiers locaux testés ; OpenSubsonic reste à faire | API officielles |
+| P3.2 | IN_PROGRESS | Historique SQLite/provenance/déduplication/exclusions/score faits ; cache HTTP et réconciliation d'identités restent à faire | P3.1 |
+| P3.3 | IN_PROGRESS | Preview/rapport et fixtures/pannes partiels faits ; test API réel attend la clé Last.fm | P3.2 |
 | P4.1 | TODO | File d'acquisition avec adaptateurs de sources autorisées, simulation par défaut | P2, P3 |
 | P4.2 | TODO | Cycle hebdomadaire : 25 candidats, 10 acquisitions, un worker, limites stockage | P4.1 |
 | P4.3 | TODO | Playlists gérées idempotentes, IDs Navidrome vérifiés ; absents dans rapport séparé | P4.2 |

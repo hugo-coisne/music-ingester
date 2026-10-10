@@ -18,8 +18,9 @@ flowchart LR
   N -->|lecture seule| AL
 ```
 
-Discovery, ses connecteurs et Lidarr sont des composants à implémenter/intégrer.
-Navidrome et l'ingester existent réellement ; voir STATUS pour les preuves.
+Discovery existe pour la collecte, le classement et le rapport SQLite ; acquisition,
+API Navidrome, playlists et Lidarr restent à intégrer. Navidrome parallèle et
+l'ingester sont testés réellement ; voir STATUS pour les preuves et limites.
 
 Le Compose musical est séparé de Servarr vidéo. Navidrome garde comptes, favoris,
 écoutes et playlists dans sa SQLite. Les bases ingestion et Discovery restent
