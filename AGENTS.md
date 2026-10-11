@@ -15,6 +15,11 @@ La feuille de route distingue réalisation, tests simulés et validation sur ser
 - Tester erreurs partielles, concurrence, reprises et absence d'écrasement.
 - Commit explicite des seuls fichiers source après validation ; jamais `git add .`.
 - Actualiser STATUS et les tâches ROADMAP à chaque incrément.
+- Laboratoire synthétique local : `make lab`, `make lab-check`, `make lab-stop` ;
+  voir `docs/LOCAL_PLAYLISTS.md`. Ne jamais y monter les dossiers de production.
+- Maintenance utilisateur en cours : ne pas redémarrer Navidrome de production
+  ni réactiver `home-music-watch.timer` avant la fin annoncée et le réaudit des chemins.
+- P5.4/P5.5 (multiutilisateur) explicitement différées, ne pas les implémenter maintenant.
 
 ## Invariants
 

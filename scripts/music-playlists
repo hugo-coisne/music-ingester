@@ -24,6 +24,11 @@ case "$action" in
       watch run --config /config/watch.toml
     ;;
   run) systemctl --user start --no-block home-music-watch.service ;;
+  radio)
+    shift
+    docker compose --env-file .env -f compose.watch.yml run --rm watch \
+      radio --config /config/watch.toml "$@"
+    ;;
   logs) journalctl --user -u home-music-watch.service -n 100 --no-pager ;;
-  *) echo 'Actions: add ID, remove ID, list, status, report, preview, run, logs' >&2; exit 2 ;;
+  *) echo 'Actions: add ID, remove ID, list, status, report, preview, run, logs, radio [options]' >&2; exit 2 ;;
 esac

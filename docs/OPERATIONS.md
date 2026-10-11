@@ -4,6 +4,8 @@
 |---|---|
 | Installer les dépendances locales | `make install` |
 | Tests hors réseau | `make test` |
+| Créer/démarrer et tester le laboratoire synthétique | `make lab` |
+| Recontrôler / arrêter le laboratoire | `make lab-check` / `make lab-stop` |
 | Diagnostic ingestion | `make doctor PROFILE=sandbox` |
 | État ingestion | `make status PROFILE=production` |
 | Prévisualiser / conserver les suggestions | `make discover-preview` / `make discover` |
@@ -27,6 +29,10 @@ La synchronisation déployée utilise `/home/hugo/docker/home-music/automation` 
 Voir [PLAYLIST_SYNC.md](PLAYLIST_SYNC.md) pour les limites et la planification.
 Les codes de sortie non nuls signalent aussi les **échecs partiels** : contrôler
 le rapport avant de conclure que tout le cycle a échoué.
+
+Smart Playlists et radios à la demande : [LOCAL_PLAYLISTS.md](LOCAL_PLAYLISTS.md).
+La production reste suspendue pendant le réarrangement ; ces ajouts sont validés
+dans le laboratoire local avant leur futur déploiement.
 
 Sur le serveur, utiliser `docker compose --env-file .env -f compose.music.yml`
 depuis `/home/hugo/docker/home-music/repo-p1-20261010`. Le projet est

@@ -1,5 +1,38 @@
 # État au 2026-10-11
 
+## Laboratoire isolé et playlists locales — 11 octobre
+
+- Autorisation reçue de créer une autre instance pendant le réarrangement.
+  Laboratoire sur le poste **Pop!_OS**, sans volume du serveur Ubuntu :
+  `artifacts/navidrome-lab-v2`, `http://127.0.0.1:15435/app/`, Navidrome 0.64.0
+  figé par digest. Musique RO, base neuve, compte synthétique, intégrations externes
+  désactivées. Aucun accès ni changement de production dans cet incrément.
+- `make lab` crée/démarre et vérifie le laboratoire ; `make lab-check` / `make lab-stop`
+  le recontrôlent/l'arrêtent. La première fixture locale `navidrome-lab-v1` est arrêtée.
+  Prérequis : environnement Python, FFmpeg et Docker. Ce n'est pas une restauration
+  de production en une commande ; P6.5 reste ouverte.
+- **API Navidrome réelle** : quatre sons synthétiques indexés ; miroir public,
+  réparation privé→public et deuxième passage sans changement. Streaming authentifié
+  HTTP 200, octets identiques au fichier. Contrôle de production toujours à refaire
+  après maintenance. Le JSON API omet `public` quand il est faux : fixture adaptée.
+- Cinq Smart Playlists publiques importées : Favorites (1), Fresh Discoveries (1),
+  Recently Added (4), Rediscover My Library (1), Weekly Mix (2). Historique synthétique
+  de 100 jours et favori utilisés ; aucun scrobble externe. Mix stable au second accès.
+  Essai réel ayant corrigé le filtre Fresh Discoveries : chemin relatif
+  `Managed Singles/`, pas `/Managed Singles/`.
+- Nouveau `music_ingest radio` : artiste, morceau ou genre, simulation par défaut,
+  sources expliquées, filtre fichiers physiques/IDs autorisés, réutilisation du verrou,
+  de la propriété et des sauvegardes de miroir. Trois radios réelles de trois titres
+  chacune ; répétition idempotente. Fallback local testé avec panne de similarité simulée.
+- `make test` : **133 tests réussis** en local. `make lab-check` et `make lab` réussis
+  après correction ; preuve privée `artifacts/navidrome-lab-v2/proof.json`.
+- Mesure au repos sur le poste : **22,08 Mio et 0,02 % CPU**, limite 384 Mio/0,75 CPU.
+  C'est une mesure de laboratoire avec quatre pistes, pas celle de la bibliothèque réelle.
+- Documentation : `docs/LOCAL_PLAYLISTS.md`. Aucun déploiement des radios/Smart Playlists
+  sur le serveur en maintenance ; timer d'ingestion laissé suspendu. Prochaines étapes :
+  promotion/rétention ou restauration guidée en isolation ; audit des chemins et
+  validation de production seulement à la fin du réarrangement.
+
 ## P3.2 local et suspension de l'automatisation — 11 octobre
 
 - Confirmation serveur : `home-music-watch.timer` est `inactive` et `disabled`.

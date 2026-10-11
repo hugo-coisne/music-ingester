@@ -1,5 +1,19 @@
 # Décisions
 
+## 2026-10-11 — Laboratoire local et playlists natives
+
+Pendant le réarrangement utilisateur, utiliser Docker sur le poste Pop!_OS avec
+quatre sons synthétiques et une base Navidrome neuve. Le laboratoire ne monte
+aucun chemin du serveur Ubuntu ; toutes les intégrations externes sont désactivées.
+Un seul conteneur local actif, pas de worker résident. L'ancienne instance de test
+locale est arrêtée lorsque la fixture suivante reprend le même port.
+
+Préférer les `.nsp` natives pour favoris, ajouts récents, redécouverte et mix
+hebdomadaire, sans ordonnanceur Python supplémentaire. Les radios sont des tâches
+ponctuelles OpenSubsonic, avec repli local explicite et intersection des IDs avec
+les fichiers physiques. Aucune acquisition ni modification d'historique hors fixture.
+Le traitement multiutilisateur reste différé conformément à la demande.
+
 ## 2026-10-11 — Cache HTTP du worker
 
 Réutiliser `watch.db` et son verrou existant pour un cache borné des lectures de

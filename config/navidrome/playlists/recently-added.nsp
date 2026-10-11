@@ -1,0 +1,9 @@
+{
+  "name": "Recently Added",
+  "comment": "Les 25 ajouts les plus récents de la bibliothèque.",
+  "public": true,
+  "all": [{"gt": {"duration": 0}}],
+  "sort": "dateAdded",
+  "order": "desc",
+  "limit": 25
+}

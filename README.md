@@ -16,6 +16,12 @@ cd /home/hugo/docker/home-music/automation
 ./music-playlists status
 ```
 
+Pendant le réarrangement de la bibliothèque, les imports de production sont suspendus.
+Un [laboratoire synthétique et les playlists locales](docs/LOCAL_PLAYLISTS.md) sont
+disponibles : `make lab` lance Navidrome isolé et vérifie le streaming, les miroirs
+publics, cinq Smart Playlists et les radios artiste/morceau/genre. Aucun volume de
+production n'est monté dans ce laboratoire.
+
 # Music ingestion
 
 A Python CLI that imports a YouTube Music playlist into a tagged M4A library.

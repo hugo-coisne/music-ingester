@@ -1,0 +1,9 @@
+{
+  "name": "Rediscover My Library",
+  "comment": "Titres déjà écoutés, mais pas depuis 60 jours.",
+  "public": true,
+  "all": [{"gt": {"playCount": 0}}, {"notInTheLast": {"lastPlayed": 60}}],
+  "sort": "lastPlayed",
+  "order": "asc",
+  "limit": 25
+}

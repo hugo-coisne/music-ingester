@@ -1,5 +1,11 @@
 # Installation et validation
 
+## Environnement de test indépendant
+
+`make lab` démarre et valide un laboratoire synthétique en une commande une fois
+Python/FFmpeg/Docker disponibles. Voir [LOCAL_PLAYLISTS.md](LOCAL_PLAYLISTS.md).
+Il n'utilise aucune donnée de production et ne remplace pas sa procédure de restauration.
+
 ## Portée de la procédure actuelle
 
 La remise en place est documentée mais nécessite plusieurs étapes : Navidrome

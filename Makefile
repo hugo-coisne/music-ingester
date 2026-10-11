@@ -53,3 +53,12 @@ playlist-remove:
 	$(PYTHON) -m music_ingest watch remove "$(PLAYLIST)" --config "$(WATCH_CONFIG)"
 playlist-list:
 	$(PYTHON) -m music_ingest watch list --config "$(WATCH_CONFIG)"
+
+LAB_ROOT ?= artifacts/navidrome-lab-v2
+.PHONY: lab lab-check lab-stop
+lab:
+	$(PYTHON) scripts/navidrome_lab.py up --root "$(LAB_ROOT)"
+lab-check:
+	$(PYTHON) scripts/navidrome_lab.py check --root "$(LAB_ROOT)"
+lab-stop:
+	$(PYTHON) scripts/navidrome_lab.py stop --root "$(LAB_ROOT)"

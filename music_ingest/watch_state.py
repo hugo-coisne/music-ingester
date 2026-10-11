@@ -39,6 +39,8 @@ def connect(path, readonly=False):
             next_at REAL DEFAULT 0,status TEXT);
         CREATE TABLE IF NOT EXISTS runs(id INTEGER PRIMARY KEY,report TEXT,
                                        created_at TEXT DEFAULT CURRENT_TIMESTAMP);
+        CREATE TABLE IF NOT EXISTS radio_runs(id INTEGER PRIMARY KEY,report TEXT,
+                                             created_at TEXT DEFAULT CURRENT_TIMESTAMP);
     ''')
     return db
 

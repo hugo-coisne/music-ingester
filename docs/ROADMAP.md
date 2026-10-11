@@ -26,11 +26,11 @@ Mise à jour : 2026-10-11. Les critères ci-dessous restent ouverts jusqu'à pre
 | P4.1 | DONE | Queue/résolution conservative, acquisitions YouTube réelles et erreurs partielles | P2, P3 |
 | P4.2 | DONE | Cache hebdomadaire, timer 15 min actif, quotas et déclenchement systemd réel vérifiés | P4.1 |
 | P4.3 | DONE | Deux miroirs réels, IDs vérifiés, lecture HTTP audio, second passage idempotent | P4.2 |
-| P4.3a | BLOCKED | Visibilité publique imposée et testée (118 tests), image activée ; vérification API réelle restante | Navidrome arrêté par utilisateur pour réarrangement |
+| P4.3a | IN_PROGRESS | Visibilité publique et réparation privé→public validées par API réelle sur laboratoire synthétique ; contrôle production restant | Fin du réarrangement de production |
 | P4.4 | TODO | Favoris conservés, promotion temporaire→permanent, rétention explicite | P4.3 |
 | P4.5 | DONE | E2E synthétique et serveur, succès partiels, reprise et absence de doublons au second passage | P4.1–3 |
 | P4.YT | IN_PROGRESS | Surveillance opérationnelle ; rattrapage des 202 titres en cours, refus 403 signalés | Disponibilité YouTube |
-| P5.1 | TODO | Smart playlists et radios locales artiste/titre/genre | P3, P4 |
+| P5.1 | IN_PROGRESS | Cinq Smart Playlists et radios artiste/titre/genre implémentées et validées sur Navidrome 0.64 synthétique ; déploiement production restant | Fin maintenance, chemins et catalogue réaudités |
 | P5.2 | BLOCKED | Amperfy/Arpeggi/SubStreamer : streaming, favoris, hors ligne, reconnexion | P1.3–4 et iPhone |
 | P5.3 | TODO | Statut léger, formats limitant transcodage, vérification playlists hebdomadaires | P4 |
 | P5.4 | TODO | Recommandations personnelles pour chaque utilisateur disposant de Last.fm et/ou ListenBrainz configuré et de résultats exploitables ; différé, priorité basse | Usage multiutilisateur futur ; comptes autorisés |
