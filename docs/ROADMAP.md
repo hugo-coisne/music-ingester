@@ -13,7 +13,7 @@ Mise à jour : 2026-10-11. Les critères ci-dessous restent ouverts jusqu'à pre
 | P1.2 | DONE | Instance parallèle avec copie de la base, comparaison favoris/historiques/playlists | P1.1 |
 | P1.3 | IN_PROGRESS | Streaming API réel validé ; lecture interactive navigateur/iPhone restante | Appareil et accès privé |
 | P1.4 | BLOCKED | Accès privé Tailscale, tests réseau mobile | Autorisation compte et réseau |
-| P1.5 | BLOCKED | Scrobbling Last.fm/ListenBrainz vérifié, sans double comptage | Comptes autorisés |
+| P1.5 | BLOCKED | Last.fm : clés chargées, session refusée (erreur 9), reconnexion personnelle puis écoute réelle requises ; ListenBrainz à valider | Réautorisation Last.fm par utilisateur |
 | P2.1 | DONE | Verrou import, états persistants, publication sans écrasement et reprise | Tests existants |
 | P2.2 | DONE | Renforcer isolation sandbox, nettoyage sous verrou et CLI dry-run | Tests de non-régression |
 | P2.3 | DONE | Identifiants MBID/ISRC et déduplication conservatrice, limiter fingerprint de références | P2.2 |

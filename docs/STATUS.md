@@ -1,5 +1,19 @@
 # État au 2026-10-11
 
+## Diagnostic scrobbling Last.fm — 11 octobre
+
+- Conteneur de production recréé à 06:10 UTC ; `ND_LASTFM_APIKEY` et
+  `ND_LASTFM_SECRET` présents, sans exposition de leurs valeurs.
+- Les lecteurs NavidromeUI et Arpeggi autorisent le scrobbling. Une session Last.fm
+  existe, mais Last.fm répond `error(9): Invalid session key - Please re-authenticate`.
+- Intervention requise : désactiver puis réactiver Last.fm dans les paramètres
+  personnels du compte Navidrome et autoriser à nouveau le compte Last.fm.
+  La clé API seule ne renouvelle pas cette autorisation personnelle.
+- Une soumission est journalisée comme abandonnée ; file de reprise vide au contrôle.
+  Ne pas promettre de renvoi des écoutes concernées. Validation réelle restante :
+  écouter un nouveau morceau après reconnexion et vérifier sa réception Last.fm.
+- Diagnostic en lecture seule ; aucun redémarrage ni modification de base.
+
 Mission en cours : playlists surveillées et acquisitions Last.fm déployées, timer
 actif et premiers cycles réels validés. P1 parallèle lit maintenant un flux authentifié.
 La plateforme complète P0–P6 n'est pas encore validée.
