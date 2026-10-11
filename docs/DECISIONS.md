@@ -1,5 +1,17 @@
 # Décisions
 
+## 2026-10-11 — Cache HTTP du worker
+
+Réutiliser `watch.db` et son verrou existant pour un cache borné des lectures de
+recommandations. Cela conserve les succès intermédiaires d'une collecte interrompue
+sans ajouter de service ni de base. Expiration de six heures, 128 entrées/8 Mio de
+contenu par défaut, suppression des entrées expirées et éviction des plus anciennes
+à l'écriture. Les simulations utilisent la copie mémoire déjà prévue par le worker.
+Les échecs restent visibles ; le repli sur le dernier lot hebdomadaire réussi reste
+la responsabilité de l'orchestrateur. Aucun cache d'authentification ou de scrobbling.
+Changement de schéma additif, compatible avec l'ancien worker et ses sauvegardes.
+Déploiement différé jusqu'à la fin de la maintenance bibliothèque annoncée par l'utilisateur.
+
 ## 2026-10-11 — Visibilité publique des miroirs
 
 À la demande de l'utilisateur, les miroirs YouTube et recommandations gérés par

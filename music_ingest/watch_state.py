@@ -32,6 +32,8 @@ def connect(path, readonly=False):
         CREATE TABLE IF NOT EXISTS playlist_backups(id INTEGER PRIMARY KEY,
             source TEXT NOT NULL,payload TEXT NOT NULL,created_at TEXT DEFAULT CURRENT_TIMESTAMP);
         CREATE TABLE IF NOT EXISTS cache(path TEXT PRIMARY KEY,signature TEXT,payload TEXT);
+        CREATE TABLE IF NOT EXISTS recommendation_http_cache(
+            key TEXT PRIMARY KEY, stored REAL NOT NULL, payload TEXT NOT NULL, bytes INTEGER NOT NULL);
         CREATE TABLE IF NOT EXISTS jobs(source TEXT PRIMARY KEY,payload TEXT,updated REAL);
         CREATE TABLE IF NOT EXISTS queue(key TEXT PRIMARY KEY,track TEXT,attempts INTEGER DEFAULT 0,
             next_at REAL DEFAULT 0,status TEXT);

@@ -20,7 +20,7 @@ Mise à jour : 2026-10-11. Les critères ci-dessous restent ouverts jusqu'à pre
 | P2.4 | DONE | Retry/backoff, quota partagé, taille/espace et ressources bornés ; cycles serveur réels | P2.2 |
 | P2.5 | DONE | Imports réels autorisés, tags/pochettes/indexation, streaming puis second passage sans doublon | Demande d'acquisition reçue |
 | P3.1 | IN_PROGRESS | Adaptateurs externes et catalogue OpenSubsonic faits ; graines locales depuis favoris/histoire restantes | API officielles |
-| P3.2 | IN_PROGRESS | Historique SQLite/provenance/déduplication/exclusions/score faits ; cache HTTP et réconciliation d'identités restent à faire | P3.1 |
+| P3.2 | IN_PROGRESS | Historique SQLite/provenance/déduplication/exclusions/score faits ; cache HTTP du worker développé et testé localement, déploiement différé ; réconciliation d'identités restante | P3.1 ; fin maintenance bibliothèque pour déployer |
 | P3.3 | IN_PROGRESS | Last.fm réel validé ; ListenBrainz testé réellement vide/indisponible, attente de résultats | Fournisseur ListenBrainz |
 | P3.4 | DONE | Clé Last.fm, repli historique complet, deux cycles réels de 25 suggestions sans doublon | Clé fournie et tests réels |
 | P4.1 | DONE | Queue/résolution conservative, acquisitions YouTube réelles et erreurs partielles | P2, P3 |

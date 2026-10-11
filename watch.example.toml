@@ -6,6 +6,13 @@ profile = "sandbox"
 # Explicit opt-in, including when the scheduler passes --apply.
 acquisition_enabled = false
 
+# Cache successful provider reads in watch.db. No secrets in cache metadata.
+# The weekly recommendation snapshot remains separate. Set ttl_seconds=0 to disable.
+[recommendation_cache]
+ttl_seconds = 21600
+max_entries = 128
+max_bytes = 8388608
+
 [limits]
 acquisitions = 10
 file_bytes = 104857600

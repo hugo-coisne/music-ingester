@@ -157,6 +157,28 @@ l'attente des acquisitions en échec. Les statuts distinguent `playable`,
 Le catalogue et les tags sont vérifiés avec les chemins réels ; les tags inchangés
 sont mis en cache par taille/date/inode. Aucun fingerprinting massif.
 
+### Cache des réponses de recommandation (nouvel incrément local)
+
+Le worker conserve les réponses réussies des appels de recommandation dans
+`watch.db`, table `recommendation_http_cache`. Une panne au milieu d'une collecte
+permet de réutiliser les réponses déjà obtenues au prochain essai. Les paramètres
+optionnels `[recommendation_cache]` figurent dans `watch.example.toml` :
+`ttl_seconds=21600` (6 h), `max_entries=128`, `max_bytes=8388608` (8 Mio de contenu).
+La taille du fichier SQLite inclut aussi les autres tables et ses pages réutilisables ;
+ces plafonds ne limitent que le contenu du cache. Aucun nouveau service ni base.
+
+Seuls les endpoints de lecture explicitement utilisés par les adaptateurs sont
+éligibles. Les paramètres de requête sont condensés en SHA-256 et ne sont pas
+stockés en clair. Les réponses peuvent contenir les goûts musicaux publics du compte ;
+elles restent dans l'état privé sauvegardé. Une erreur HTTP/API n'est pas mise en cache,
+un résultat expiré ne masque pas une panne, et aucun appel d'authentification/scrobbling
+n'est mis en cache. Le cache hebdomadaire des playlists reste distinct.
+
+`--refresh-recommendations` contourne aussi ce cache HTTP ; `ttl_seconds=0` le
+désactive. En simulation, toute mise à jour se fait dans une copie SQLite en mémoire,
+sans création ni modification de fichier. Le cache est couvert par la sauvegarde
+habituelle de `watch.db`. Le CLI autonome `discover` conserve ses appels directs.
+
 ### Particularités de Navidrome 0.64 validées sur le serveur
 
 Le champ `path` OpenSubsonic est un chemin virtuel dérivé des tags : il ne suffit pas

@@ -19,6 +19,7 @@ from ytmusicapi import YTMusic
 from . import history, library, pipeline, watch_state
 from .config import build_config, load_document
 from .discovery.cli import lastfm_key
+from .discovery.cache import CachedTransport
 from .discovery.core import collect
 from .discovery.providers import LastFM, ListenBrainz
 from .subsonic import Subsonic, credentials, mirror
@@ -110,6 +111,8 @@ def local_path(track, index, imports):
 
 def recommendation_jobs(config, root, db, index, now, force=False):
     jobs, errors = [], []
+    transport = CachedTransport(db, force=force, clock=lambda: now,
+                                **config.get('recommendation_cache', {}))
     for name, provider_type in (('lastfm', LastFM), ('listenbrainz', ListenBrainz)):
         settings = config.get(name, {})
         if not settings.get('enabled', False):
@@ -122,8 +125,8 @@ def recommendation_jobs(config, root, db, index, now, force=False):
             if not cached:
                 errors.append(dict(provider=name, error='NoRecommendations'))
             continue
-        provider = (provider_type(settings['username'], lastfm_key(settings, root))
-                    if name == 'lastfm' else provider_type(settings['username']))
+        provider = (provider_type(settings['username'], lastfm_key(settings, root), transport=transport)
+                    if name == 'lastfm' else provider_type(settings['username'], transport=transport))
         rank = config.get('ranking', {})
         report = collect([provider], index, limit=50 if name == 'listenbrainz' else 25,
                          blocked_artists=rank.get('blocked_artists', []),

@@ -1,5 +1,25 @@
 # État au 2026-10-11
 
+## P3.2 local et suspension de l'automatisation — 11 octobre
+
+- Confirmation serveur : `home-music-watch.timer` est `inactive` et `disabled`.
+  Le worker a `MainPID=0` (dernier état failed, Navidrome indisponible) ; aucun
+  conteneur d'ingestion actif au contrôle. Ne pas réactiver pendant le réarrangement.
+- Cache de réponses Last.fm/ListenBrainz ajouté au worker dans `watch.db`, borné
+  en durée, nombre d'entrées et taille ; forcage de rafraîchissement conservé.
+  Échecs non cachés, secrets de requête non stockés en clair, simulation en mémoire.
+- Tests ciblés réussis : 24 (dont huit nouveaux), avec reprise après panne partielle,
+  expiration, quotas, séparation des paramètres/comptes/clés, corruption et absence
+  d'écriture en simulation. Ces preuves utilisent des APIs simulées.
+- Non-régression : `make test`, **126 tests réussis** localement ;
+  `git diff --check` réussi. Aucun test local ne vaut validation du fournisseur réel.
+- Incrément de cache local uniquement : aucun déploiement ni appel fournisseur réel
+  pendant cette étape. La correction des miroirs publics reste dans l'image serveur
+  préparée précédemment, avec validation API réelle encore bloquée.
+- Après maintenance : auditer les nouveaux chemins/montages, vérifier le catalogue,
+  prévisualiser sans acquisition, contrôler les miroirs publics, puis seulement
+  réactiver `systemctl --user enable --now home-music-watch.timer`.
+
 ## Maintenance bibliothèque et correctif de visibilité — 11 octobre
 
 - L'utilisateur a arrêté Navidrome pour réarranger sa bibliothèque. Ne pas le
