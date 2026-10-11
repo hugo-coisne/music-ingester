@@ -1,7 +1,7 @@
-# État au 2026-10-10
+# État au 2026-10-11
 
-Mission en cours : socle P0 livré, P1 parallèle déployée, durcissement P2 et
-premier module P3 testés. P1 n'est pas encore validée pour usage quotidien.
+Mission en cours : playlists surveillées et acquisitions Last.fm déployées, timer
+actif et premiers cycles réels validés. P1 parallèle lit maintenant un flux authentifié.
 La plateforme complète P0–P6 n'est pas encore validée.
 
 ## Preuves initiales
@@ -81,8 +81,6 @@ La plateforme complète P0–P6 n'est pas encore validée.
   `sha256:a218ae7ceedbb64033513cefc882dbd5bddf44e3dac8520dec1ca01f83aae9cd`.
   Pas de remplacement de l'ingester de production ni d'activation de timer.
 
-## Problèmes et interventions
-
 ## Synchronisation — développement et tests du 10 octobre
 
 - Nouvelle demande : surveiller des IDs YouTube Music et acquérir automatiquement
@@ -98,22 +96,61 @@ La plateforme complète P0–P6 n'est pas encore validée.
 - YouTube Music réel : playlist `music`, 202 titres reçus sur 202 annoncés.
 - ListenBrainz `Barge9757` répond, aucun résultat hebdomadaire disponible actuellement.
 - Serveur : dossiers d'automatisation neufs préparés, sauvegarde avant miroirs vérifiée
-  (7 fichiers), `Linger=yes` activé. Construction finale en cours ; timer pas encore activé.
-- Procédure : `docs/PLAYLIST_SYNC.md`. Validation d'acquisition et miroirs réels à suivre.
+  (7 fichiers), `Linger=yes` activé. Activation et preuves dans l'incrément ci-dessous.
+- Procédure : `docs/PLAYLIST_SYNC.md`.
+
+## Déploiement et validation réelle — 11 octobre
+
+- **116 tests passent**, en Python local 3.10 et dans la construction serveur Python 3.12.
+  Commit initial de l'orchestration : `98d80ed` ; corrections réelles documentées dans DECISIONS.
+- Adaptateur corrigé après essais réels : chemins API Navidrome virtuels → lecture
+  SQLite RO avec WAL, intersection avec IDs autorisés et fichiers physiques (3611).
+  Playlist vide → retrait explicite des indices. Test réel vide puis vide idempotent.
+- Déploiement dédié : `/home/hugo/docker/home-music/automation`, image immuable
+  `sha256:45f7a4a48be60fdc7ebe947e42e557883684780590323c4cbdda21988662942a`.
+  Ancienne release de l'ingester et services Navidrome existants conservés.
+- Premier cycle réel : 10 tentatives, 8 fichiers publiés avec tags/pochettes et indexés
+  automatiquement. Deux refus YouTube HTTP 403 conservés en erreur, sans contournement.
+  Miroirs créés : `music` (28 jouables/202) et `Discover Weekly — Last.fm` (6/25).
+- Streaming authentifié sur chaque miroir : HTTP 200 audio/mp4, 16 Kio reçus identiques
+  au fichier publié. Second passage sans acquisition : mêmes IDs, `changed=false`,
+  aucune duplication. Les 5 playlists originales, leurs 3979 entrées et 4012 annotations
+  sont inchangées par rapport au snapshot immédiatement antérieur.
+- `home-music-watch.timer` activé et observé : déclenchement automatique à 05:30:59 UTC,
+  fin du service à 05:32:55 UTC, code 0. Aucun worker résident entre deux cycles.
+  Cycle précédent à 05:27 : miroirs déjà à 33 et 10 titres ; le rattrapage continue.
+- Contrôle final à 05:31 UTC : **27 imports terminés, 1 erreur encore en attente**,
+  `music` à **38/202**, Last.fm à **15/25** ; intégrité des deux bases `ok`.
+  Commandes serveur `add` (ID déjà présent) et `list` validées sans duplication.
+  Streaming sur l'instance parallèle : HTTP 200 audio/mpeg, 16 Kio identiques au fichier.
+- Quota partagé/rotation entre sources, au plus 10 acquisitions par cycle ; un worker.
+  Mesure pendant import : worker 73,02 % d'un CPU et 97,19 Mio ; Navidrome historique
+  pendant indexation 115,19 % et 327,5 Mio. Ce sont des échantillons, pas des maxima.
+- Sauvegarde des 3 bases et configurations : **11 fichiers vérifiés et restaurés**
+  dans un dossier isolé, `backups/auto-20261011T053141Z-a0f2ab66` sur le serveur.
+  `home-music-backup.timer` actif, prochain passage quotidien à 04:07 UTC avec jitter.
+  Audio non sauvegardé ; aucun nettoyage/suppression automatique activé.
+- ListenBrainz : lecture publique réelle vide, puis indisponibilités temporaires,
+  indépendantes des succès Last.fm/YouTube. L'utilisateur confirme que Last.fm est
+  **déjà relié** à ListenBrainz ; ne pas redemander cette liaison. Aucun titre ListenBrainz
+  n'a été inventé ou acquis sous cette provenance en l'absence de résultats.
+- Preuves privées serveur : `state/first-preview.json`, `first-cycle.json/.log`,
+  `second-cycle.json`, rapports complets dans `state/watch.db`, journal systemd.
 
 ## Interventions encore requises
 
 - Tailscale absent du serveur ; autorisation de compte et configuration privée requises.
 - Identifiants Navidrome reçus, authentification validée. Essais physiques iPhone
   encore nécessaires pour certifier favoris et écoute hors ligne.
-- Last.fm fonctionne ; ListenBrainz est configuré mais ne propose aucun résultat
-  hebdomadaire. Acquisition YouTube autorisée par la nouvelle demande, en validation.
+- Last.fm et YouTube fonctionnent avec erreurs partielles signalées. Le premier
+  remplissage des 202 titres reste en cours ; certains refus d'accès peuvent persister.
+- ListenBrainz configuré et déjà relié à Last.fm, mais pas de playlist hebdomadaire
+  disponible lors des validations ; reprise automatique lorsque le fournisseur répond.
 - L'instance existante écoute sur toutes les interfaces ; exposition externe inconnue.
 - Neuf fichiers référencés absents : retrouver leur origine avant tout scan ou purge.
 - Ne pas basculer la production tant que la copie n'est pas validée.
 
-Prochaines actions : lecture Navidrome authentifiée et accès privé, adaptateur
-OpenSubsonic Discovery, cache HTTP,
-file d'acquisition sandbox et synchronisation des playlists. Ni accès iOS ni source
-externe ne sont déduits des fixtures ; Last.fm dispose maintenant d'une preuve réelle.
-P4–P6 restent largement à réaliser, P7 suspendue.
+Prochaines actions : surveiller le rattrapage et les 403, valider les résultats
+ListenBrainz lorsqu'ils existent, puis rétention/promotion, radios et playlists
+locales, scrobbling autorisé, accès privé et essais iPhone. Les accès physiques iOS
+et la bascule de production restent non validés. P7 reste suspendue.

@@ -18,8 +18,15 @@
 
 Le défaut Makefile est sandbox. `retry` réexécute la playlist en réutilisant les
 imports terminés ; ce n'est pas encore une commande filtrant exclusivement les
-erreurs. L'autorisation actuelle concerne uniquement les nouveaux imports d'audio
-synthétique : ne pas lancer de téléchargement réel à partir de ces exemples.
+erreurs. La demande du 10 octobre autorise désormais les acquisitions YouTube Music
+sur les playlists surveillées et recommandations, sans contourner les restrictions
+d'accès. Les tests automatisés continuent à utiliser de l'audio synthétique.
+
+La synchronisation déployée utilise `/home/hugo/docker/home-music/automation` :
+`./music-playlists add ID`, `list`, `run`, `status`, `report`, `logs`.
+Voir [PLAYLIST_SYNC.md](PLAYLIST_SYNC.md) pour les limites et la planification.
+Les codes de sortie non nuls signalent aussi les **échecs partiels** : contrôler
+le rapport avant de conclure que tout le cycle a échoué.
 
 Sur le serveur, utiliser `docker compose --env-file .env -f compose.music.yml`
 depuis `/home/hugo/docker/home-music/repo-p1-20261010`. Le projet est

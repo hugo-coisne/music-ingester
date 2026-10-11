@@ -41,3 +41,38 @@ arborescence avant validation de la matrice de chemins. Une base plus ancienne p
 omettre des imports récents ; la reprise doit les réconcilier sans les supprimer.
 Un rollback d'image n'implique jamais de restaurer une ancienne base incompatible
 par-dessus la base courante. Ne jamais utiliser `docker compose down -v`.
+
+## Automatisation des sauvegardes musicales
+
+Pour réinstaller : copier `scripts/backup_runner.py` et `music_ingest/backup.py`
+dans le dossier d'automatisation, adapter `deployment/backup-settings.example.json`
+en `backup-settings.json` (0600, uniquement des chemins existants), puis remplacer
+`@WATCH_ROOT@` dans les unités `home-music-backup.*` et les installer dans
+`~/.config/systemd/user/`. Exécuter la restauration de contrôle ci-dessous avant
+`systemctl --user daemon-reload` et `systemctl --user enable --now home-music-backup.timer`.
+Ajouter à `configs` les fichiers Compose/configuration Navidrome propres à l'installation.
+
+Le nouveau worker utilise `home-music-backup.timer` à 04:07 UTC chaque jour (jusqu'à
+cinq minutes de décalage). `scripts/backup_runner.py` réutilise le module de sauvegarde
+existant, attend le verrou partagé du worker et sauvegarde Navidrome, `ingest.db`,
+`watch.db`, les configurations privées, la liste d'IDs et le Compose. Aucune copie
+brute d'une base active WAL et aucune purge de sauvegardes.
+
+Sur le serveur, configuration privée dans
+`/home/hugo/docker/home-music/automation/backup-settings.json`. Le runner et une copie
+du module `music_ingest/backup.py` sont installés à côté. Un support séparé pour les
+sauvegardes et l'audio reste nécessaire ; le disque du serveur ne protège pas de
+sa propre panne. La réserve de 2 Gio empêche de remplir volontairement le disque.
+
+```sh
+cd /home/hugo/docker/home-music/automation
+python3 backup_runner.py --settings backup-settings.json --restore-check
+systemctl --user list-timers home-music-backup.timer
+journalctl --user -u home-music-backup.service -n 50 --no-pager
+```
+
+Conserver ensemble le journal `watch.db` et les playlists gérées : il contient les
+jetons de propriété nécessaires pour reprendre leurs mises à jour après restauration.
+Les pistes permanentes ne sont jamais nettoyées par ce mécanisme. Pour réinstaller,
+restaurer d'abord dans des dossiers neufs, vérifier les chemins de montage et
+réactiver les timers uniquement après une prévisualisation correcte.

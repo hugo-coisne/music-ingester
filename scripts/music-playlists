@@ -10,9 +10,14 @@ case "$action" in
       --volume "$PWD/playlists:/playlists:rw" watch \
       watch "$action" "$2" --config /config/watch.toml
     ;;
-  list|status)
+  list)
     docker compose --env-file .env -f compose.watch.yml run --rm watch \
       watch "$action" --config /config/watch.toml
+    ;;
+  status|report)
+    if test "$action" = status; then detail=--summary; else detail=; fi
+    docker compose --env-file .env -f compose.watch.yml run --rm watch \
+      watch status --config /config/watch.toml $detail
     ;;
   preview)
     docker compose --env-file .env -f compose.watch.yml run --rm watch \
@@ -20,5 +25,5 @@ case "$action" in
     ;;
   run) systemctl --user start --no-block home-music-watch.service ;;
   logs) journalctl --user -u home-music-watch.service -n 100 --no-pager ;;
-  *) echo 'Actions: add ID, remove ID, list, status, preview, run, logs' >&2; exit 2 ;;
+  *) echo 'Actions: add ID, remove ID, list, status, report, preview, run, logs' >&2; exit 2 ;;
 esac

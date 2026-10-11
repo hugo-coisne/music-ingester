@@ -17,6 +17,7 @@ cd /home/hugo/docker/home-music/automation
 ./music-playlists run
 ./music-playlists logs
 ./music-playlists status
+./music-playlists report   # détail de chaque titre, y compris les absents
 ```
 
 On peut aussi éditer `playlists/youtube.txt` : un ID par ligne, commentaires `#`
@@ -92,10 +93,11 @@ aux essais synthétiques ; elle ne garantit pas la disponibilité de tout le cat
    par Navidrome. Ne pas modifier la base ou les fichiers existants.
 3. Copier `compose.watch.yml`, `scripts/music-playlists` (exécutable) dans ce dossier.
    Préparer `.env` avec `WATCH_IMAGE` (ID immuable), `WATCH_ROOT`, `MUSIC_ROOT`,
-   `MANAGED_MUSIC_ROOT`, `MUSIC_UID`, `MUSIC_GID` ; les chemins doivent exister.
+   `MANAGED_MUSIC_ROOT`, `WATCH_NAVIDROME_DATA`, `MUSIC_UID`, `MUSIC_GID` ; les chemins doivent exister.
 4. Adapter `watch.example.toml` et `music-ingest.toml` dans `config/`. Dans le conteneur :
    musique de référence `/music` RO, bibliothèque gérée `/music/Managed Singles` RW,
-   staging `/staging`, bases `/state`, liste `/playlists/youtube.txt`.
+   staging `/staging`, bases `/state`, liste `/playlists/youtube.txt`. Configurer
+   `navidrome.catalog_db="/navidrome/navidrome.db"` et l'ID de bibliothèque correspondant.
 5. Mettre les identifiants dans `config/navidrome-credentials.json` (0600), JSON
    `{"username":"…","password":"…"}`. Clé Last.fm dans `config/lastfm-api-key` (0600).
    Renseigner les noms publics ; ListenBrainz ne nécessite pas de token pour lire ses
@@ -130,6 +132,22 @@ l'attente des acquisitions en échec. Les statuts distinguent `playable`,
 `unresolved_or_ambiguous`, `source_unavailable`, `insufficient_space`.
 Le catalogue et les tags sont vérifiés avec les chemins réels ; les tags inchangés
 sont mis en cache par taille/date/inode. Aucun fingerprinting massif.
+
+### Particularités de Navidrome 0.64 validées sur le serveur
+
+Le champ `path` OpenSubsonic est un chemin virtuel dérivé des tags : il ne suffit pas
+à retrouver un fichier physique. `navidrome.catalog_db` pointe donc vers
+`/navidrome/navidrome.db` ; le dossier `/data` existant est monté **en lecture seule**
+avec son WAL, via `WATCH_NAVIDROME_DATA` dans `.env`. Le worker ne lit que `id,path` pour
+`library_id` configuré puis intersecte avec les IDs accessibles au compte par API.
+Une évolution de schéma échoue explicitement au lieu de deviner les chemins.
+La base n'est jamais ouverte avec `immutable=1` ni écrite par le worker.
+
+Pour vider un miroir, `updatePlaylist(songIndexToRemove=…)` est nécessaire :
+`createPlaylist` sans `songId` conserve ses anciennes pistes sur cette version.
+Ces deux différences ont été détectées et corrigées par essais réels sur l'instance
+parallèle. Le catalogue vérifié contient 3611 fichiers physiques ; les neuf chemins
+historiquement absents ne deviennent pas artificiellement jouables.
 
 API de référence : [création/remplacement de playlist](https://opensubsonic.netlify.app/docs/endpoints/createplaylist/),
 [mise à jour](https://opensubsonic.netlify.app/docs/endpoints/updateplaylist/),

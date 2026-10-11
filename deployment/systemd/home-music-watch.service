@@ -1,7 +1,7 @@
 [Unit]
 Description=Import monitored music playlists and synchronize Navidrome mirrors
-After=network-online.target
-Wants=network-online.target
+# User managers do not provide the system network-online.target. Network failures
+# are reported by the bounded adapters and retried by the next timer invocation.
 
 [Service]
 Type=oneshot

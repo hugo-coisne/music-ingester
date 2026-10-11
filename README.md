@@ -5,7 +5,16 @@ Le projet continue comme socle de la plateforme musicale : [état réel](docs/ST
 [installation](docs/INSTALL.md) et [sauvegarde/restauration](docs/BACKUP_RESTORE.md).
 Le moteur et ses commandes historiques ci-dessous restent conservés.
 Le [module Discovery](docs/DISCOVERY.md) fournit une commande de recommandations
-avec simulation par défaut ; les acquisitions automatiques restent désactivées.
+avec simulation par défaut. La [synchronisation surveillée](docs/PLAYLIST_SYNC.md)
+importe les titres manquants, crée leurs miroirs Navidrome et renouvelle les
+recommandations. Son timer est déployé ; les exemples restent en simulation jusqu'à
+configuration explicite. Ajout rapide sur le serveur :
+
+```sh
+cd /home/hugo/docker/home-music/automation
+./music-playlists add ID_YOUTUBE_MUSIC
+./music-playlists status
+```
 
 # Music ingestion
 

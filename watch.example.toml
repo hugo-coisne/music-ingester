@@ -16,6 +16,11 @@ enabled = false
 url = "http://127.0.0.1:4534"
 credentials_file = "state/navidrome-credentials.json"
 music_root = "environments/sandbox/library"
+# Navidrome returns virtual API paths. Mount its data directory READ ONLY to map
+# API-visible song IDs to physical files, including its live WAL (never immutable).
+# catalog_db = "/navidrome/navidrome.db"
+library_id = 1
+index_wait_seconds = 30
 
 [lastfm]
 enabled = false

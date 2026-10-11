@@ -1,8 +1,10 @@
 """Bounded OpenSubsonic adapter. Credentials only travel in POST bodies."""
 import hashlib
+from contextlib import closing
 import json
 from pathlib import Path
 import secrets
+import sqlite3
 from urllib.parse import urlsplit
 
 import requests
@@ -24,7 +26,7 @@ def credentials(path: Path):
 
 
 class Subsonic:
-    def __init__(self, url, username, password, session=None):
+    def __init__(self, url, username, password, session=None, catalog_db=None, library_id=1):
         parsed = urlsplit(url)
         if parsed.username or parsed.password or parsed.query or parsed.fragment:
             raise ValueError('Invalid server URL')
@@ -34,6 +36,7 @@ class Subsonic:
             raise ValueError('HTTPS required except on loopback')
         self.url, self.username, self.password = url.rstrip('/'), username, password
         self.session = session or requests.Session()
+        self.catalog_db, self.library_id = catalog_db, library_id
 
     def call(self, endpoint, **params):
         salt = secrets.token_hex(16)
@@ -62,6 +65,17 @@ class Subsonic:
     def catalog(self, music_root: Path):
         """Return only catalog entries whose physical file is still present."""
         music_root = music_root.resolve()
+        physical = None
+        if self.catalog_db:
+            # Navidrome's API path is virtual, based on tags, not a disk filename.
+            # Isolate its version-dependent schema here; read WAL consistently.
+            try:
+                uri = Path(self.catalog_db).resolve().as_uri() + '?mode=ro'
+                with closing(sqlite3.connect(uri, uri=True, timeout=5)) as db:
+                    physical = dict(db.execute('SELECT id,path FROM media_file WHERE library_id=?',
+                                               (self.library_id,)).fetchall())
+            except sqlite3.Error:
+                raise SubsonicError('Navidrome physical catalog unavailable or schema unsupported') from None
         result, seen = {}, set()
         for offset in range(0, 100000, 500):
             songs = self.call('search3', query='', songCount=500, songOffset=offset,
@@ -70,7 +84,10 @@ class Subsonic:
                 if song['id'] in seen:
                     raise SubsonicError('Catalog pagination repeated an ID')
                 seen.add(song['id'])
-                path = (music_root / song.get('path', '')).resolve()
+                # Intersect API-visible IDs with physical paths; never grant access
+                # to songs hidden from the authenticated account.
+                relative = physical.get(song['id'], '') if physical is not None else song.get('path', '')
+                path = (music_root / relative).resolve()
                 if music_root in path.parents and path.is_file():
                     result[path] = song['id']
             if len(songs) < 500:
@@ -115,7 +132,12 @@ def mirror(api, db, source, name, song_ids):
             db.execute('INSERT INTO playlist_backups(source,payload) VALUES (?,?)',
                        (source, json.dumps(current)))
         if old_ids != ids:
-            api.call('createPlaylist', playlistId=playlist_id, songId=ids)
+            if ids:
+                api.call('createPlaylist', playlistId=playlist_id, songId=ids)
+            else:
+                # Navidrome 0.64 treats createPlaylist without songId as no replacement.
+                api.call('updatePlaylist', playlistId=playlist_id,
+                         songIndexToRemove=list(range(len(old_ids))))
         api.call('updatePlaylist', playlistId=playlist_id, name=name, comment=marker, public='false')
     verified = api.call('getPlaylist', id=playlist_id)['playlist']
     if verified['name'] != name or [s['id'] for s in verified.get('entry', [])] != ids:

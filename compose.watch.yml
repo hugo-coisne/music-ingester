@@ -14,6 +14,11 @@ services:
       - /tmp:size=128m,mode=1777
     volumes:
       - type: bind
+        source: ${WATCH_NAVIDROME_DATA:?Set existing Navidrome data directory for read-only catalog access}
+        target: /navidrome
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
         source: ${WATCH_ROOT}/playlists
         target: /playlists
         read_only: true
@@ -40,7 +45,7 @@ services:
         source: ${MANAGED_MUSIC_ROOT:?Set dedicated singles directory}
         target: /music/Managed Singles
         bind: {create_host_path: false}
-    command: [watch, run, --config, /config/watch.toml, --apply]
+    command: [watch, run, --config, /config/watch.toml, --apply, --summary]
     logging:
       driver: json-file
       options: {max-size: 5m, max-file: "2"}

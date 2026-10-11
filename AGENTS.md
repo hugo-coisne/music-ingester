@@ -8,6 +8,9 @@ La feuille de route distingue réalisation, tests simulés et validation sur ser
 
 - Python local : `.venv/bin/python`. Tests : `make test`.
 - CLI historique : `.venv/bin/python -m music_ingest` (voir README.md).
+- Synchronisation : `music_ingest watch`, `docs/PLAYLIST_SYNC.md`. Le 10 octobre,
+  l'utilisateur a demandé l'acquisition automatique YouTube Music, remplaçant
+  sa restriction antérieure aux tests synthétiques. Ne pas contourner les accès.
 - Préserver `production` et `sandbox`. Tester avec des fichiers synthétiques.
 - Tester erreurs partielles, concurrence, reprises et absence d'écrasement.
 - Commit explicite des seuls fichiers source après validation ; jamais `git add .`.
@@ -25,6 +28,10 @@ La feuille de route distingue réalisation, tests simulés et validation sur ser
 - Pas de secrets dans Git, logs ou URLs. Pas de TLS désactivé, `down -v`, prune global.
 - Pas d'acquisition réelle sans source et autorisation de droits identifiées.
 - Une suggestion n'est jouable qu'après correspondance locale vérifiée ou publication.
+- Navidrome 0.64 retourne des chemins API virtuels : intersecter les IDs autorisés
+  avec les chemins SQLite RO et les fichiers existants. Ne jamais écrire sa base.
+- Préserver les jetons de propriété de `watch.db` : aucun rapprochement de playlist
+  par simple nom, aucune suppression des playlists personnelles.
 - Le poste Pop!_OS et le serveur Ubuntu sont distincts. Ne pas confondre leurs chemins.
 - SSH vérifie la clé d'hôte ; déploiement parallèle sur boucle locale, sans bascule
   de production ni changement réseau sensible sans autorisation.

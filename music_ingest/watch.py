@@ -4,6 +4,7 @@ from collections import Counter
 from contextlib import closing, redirect_stdout
 from datetime import datetime, timezone
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -172,6 +173,8 @@ def cycle(config, root, ingest, db, client, api, *, apply=False, force=False, no
     if apply:
         ingest.library_dir.mkdir(parents=True, exist_ok=True)
         ingest.staging_dir.mkdir(parents=True, exist_ok=True)
+        with history.import_lock(ingest.db_path), closing(history.connect_db(ingest.db_path)) as imports:
+            history.recover_published(imports, ingest.library_dir)
     # Absent managed directory in dry-run is normal; absent reference mount is not.
     index = watch_state.cached_index(db, [p for p in roots if p != ingest.library_dir or p.exists()])
     report = dict(generated_at=datetime.fromtimestamp(now, timezone.utc).isoformat(),
@@ -193,6 +196,12 @@ def cycle(config, root, ingest, db, client, api, *, apply=False, force=False, no
     jobs.extend(recommended)
     report['warnings'].extend(e for e in errors if e.get('error') == 'NoRecommendations')
     report['errors'].extend(e for e in errors if e.get('error') != 'NoRecommendations')
+    per_job = max(1, math.ceil(maximum / max(1, len(jobs))))
+    if jobs:
+        # Share the acquisition budget and rotate precedence so a large playlist
+        # cannot indefinitely starve recommendations or a newly added source.
+        offset = db.execute('SELECT count(*) FROM runs').fetchone()[0] % len(jobs)
+        jobs = jobs[offset:] + jobs[:offset]
     if api:
         api.call('ping')  # Authentication must succeed before downloads/mutations.
     attempted = set()
@@ -245,7 +254,7 @@ def cycle(config, root, ingest, db, client, api, *, apply=False, force=False, no
                 if not enabled:
                     record['status'] = 'would_acquire' if not apply else 'acquisition_disabled'
                     continue
-                if report['attempts'] >= maximum:
+                if report['attempts'] >= maximum or len(selected) >= per_job:
                     record['status'] = 'queued_limit'
                     continue
                 if track['videoId'] in attempted:
@@ -339,7 +348,9 @@ def main(argv=None):
                 report = json.loads(row[0]) if row else {}
             else:
                 settings = config.get('navidrome', {})
-                api = Subsonic(settings['url'], **credentials(root / settings['credentials_file'])) if settings.get('enabled') else None
+                api = Subsonic(settings['url'], **credentials(root / settings['credentials_file']),
+                    catalog_db=root / settings['catalog_db'] if settings.get('catalog_db') else None,
+                    library_id=int(settings.get('library_id', 1))) if settings.get('enabled') else None
                 if args.apply and not api:
                     raise ValueError('Live synchronization requires Navidrome credentials')
                 with redirect_stdout(sys.stderr):

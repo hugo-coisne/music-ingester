@@ -1,0 +1,11 @@
+[Unit]
+Description=Verified backup of music databases and configuration
+
+[Service]
+Type=oneshot
+WorkingDirectory=@WATCH_ROOT@
+ExecStart=/usr/bin/python3 backup_runner.py --settings backup-settings.json
+TimeoutStartSec=20min
+UMask=0077
+Nice=15
+IOSchedulingClass=idle

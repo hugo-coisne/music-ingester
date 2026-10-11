@@ -93,3 +93,18 @@ Le réseau hôte sert seulement à joindre Navidrome sur 127.0.0.1 ; le worker n
 sur aucun port. HTTP n'est accepté que sur la boucle locale, secrets en corps POST.
 Pas de scan complet forcé de l'ancienne bibliothèque ; le rapport attend que le
 catalogue Navidrome confirme l'indexation des fichiers publiés.
+
+## 11 octobre — validation OpenSubsonic et chemins virtuels
+
+L'essai réel révèle que les chemins API Navidrome 0.64 sont virtuels : six seulement
+correspondaient aux noms sur disque. L'adaptateur optionnel lit `media_file(id,path)`
+pour la bibliothèque configurée dans SQLite RO, avec le WAL, puis intersecte les IDs
+avec le catalogue OpenSubsonic autorisé. Résultat confirmé : 3611 fichiers existants,
+neuf absents exclus. Cette lecture du schéma est isolée et échoue explicitement si
+le schéma change. Elle ne modifie pas Navidrome et ne remplace pas son API de playlists.
+
+Une playlist vide nécessite `updatePlaylist` avec les indices à retirer : la requête
+`createPlaylist` sans titres est un no-op dans Navidrome. Le test d'intégration a
+détecté cette différence ; fixture corrigée et test réel vide→vide idempotent réussi.
+Le quota d'acquisition est partagé entre sources et la priorité tourne à chaque
+cycle pour éviter qu'une longue liste prive les recommandations de téléchargements.

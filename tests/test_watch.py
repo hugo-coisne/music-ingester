@@ -34,13 +34,17 @@ class FakeAPI:
             key = params.get('playlistId', str(len(self.playlists)))
             if key not in self.playlists:
                 self.playlists[key] = dict(id=key, name=params['name'], owner=self.username)
-            self.playlists[key]['entry'] = [{'id': x} for x in params.get('songId', [])]
+            if params.get('songId') or 'entry' not in self.playlists[key]:
+                self.playlists[key]['entry'] = [{'id': x} for x in params.get('songId', [])]
             if self.fail_after_create:
                 self.fail_after_create = False
                 raise SubsonicError('Connection lost after remote commit')
             return {'playlist': self.playlists[key].copy()}
         if endpoint == 'updatePlaylist':
             self.mutations += 1
+            playlist = self.playlists[params['playlistId']]
+            if 'songIndexToRemove' in params:
+                playlist['entry'] = [x for i, x in enumerate(playlist['entry']) if i not in params['songIndexToRemove']]
             self.playlists[params['playlistId']].update({k: v for k, v in params.items() if k != 'playlistId'})
             return {}
         raise AssertionError(endpoint)
@@ -175,3 +179,51 @@ class WatchTests(TemporaryTest):
         args, kwargs = session.post.call_args
         self.assertEqual(args[0], 'http://127.0.0.1:4533/rest/ping')
         self.assertNotIn('password', json.dumps(kwargs))
+
+    def test_virtual_api_paths_use_readonly_wal_catalog_and_only_visible_existing_files(self):
+        path = self.root / 'navidrome.db'
+        with sqlite3.connect(path) as writer:
+            writer.execute('PRAGMA journal_mode=WAL')
+            writer.execute('CREATE TABLE media_file(id,path,library_id)')
+            writer.executemany('INSERT INTO media_file VALUES (?,?,1)',
+                              [('visible', 'real.m4a'), ('missing', 'gone.m4a'), ('hidden', 'hidden.m4a')])
+            writer.commit()
+            (self.root / 'real.m4a').touch()
+            (self.root / 'hidden.m4a').touch()
+            api = Subsonic('http://127.0.0.1:4533', 'u', 'p', catalog_db=path)
+            api.call = Mock(return_value={'searchResult3': {'song': [
+                {'id': 'visible', 'path': 'virtual/title.m4a'}, {'id': 'missing', 'path': 'real.m4a'}]}})
+            self.assertEqual(api.catalog(self.root), {self.root / 'real.m4a': 'visible'})
+            self.assertEqual(writer.execute('SELECT count(*) FROM media_file').fetchone()[0], 3)
+
+    def test_weekly_cache_and_empty_provider_do_not_invent_tracks(self):
+        from music_ingest.discovery.core import Candidate
+        provider = Mock(name='provider')
+        provider.name = 'lastfm'
+        provider.candidates.return_value = [Candidate('lastfm', 'Air', 'Song', .8, 'real fixture')]
+        settings = {'lastfm': {'enabled': True, 'username': 'user'}}
+        with patch.object(watch, 'LastFM', return_value=provider):
+            first, errors = watch.recommendation_jobs(settings, self.root, self.db, {}, 100)
+            second, errors = watch.recommendation_jobs(settings, self.root, self.db, {}, 101)
+        self.assertEqual(first, second)
+        self.assertEqual(provider.candidates.call_count, 1)
+        self.assertEqual(first[0]['name'], 'Discover Weekly — Last.fm')
+        self.assertIsNone(first[0]['tracks'][0].get('videoId'))
+        provider.candidates.return_value = []
+        with patch.object(watch, 'LastFM', return_value=provider):
+            empty, errors = watch.recommendation_jobs(settings, self.root, self.db, {}, 102, force=True)
+        self.assertEqual(empty, [])
+        self.assertEqual(errors, [{'provider': 'lastfm', 'error': 'NoRecommendations'}])
+
+    def test_budget_is_shared_across_sources(self):
+        (self.root / 'ids.txt').write_text('PL1234567890\nPL1234567891\n')
+        client = self.client([])
+        client.get_playlist.side_effect = [
+            dict(title='One', tracks=[track('one'), track('two')]),
+            dict(title='Two', tracks=[track('three'), track('four')])]
+        settings = dict(playlist_ids='ids.txt', acquisition_enabled=True,
+                        limits=dict(acquisitions=2, free_bytes=0), navidrome=dict(music_root='library'))
+        with patch.object(watch.pipeline, 'run_sync') as run:
+            report = watch.cycle(settings, self.root, self.config, self.db, client, self.api, apply=True)
+        self.assertEqual(report['attempts'], 2)
+        self.assertEqual([c.args[0].tracks[0]['videoId'] for c in run.call_args_list], ['one', 'three'])
