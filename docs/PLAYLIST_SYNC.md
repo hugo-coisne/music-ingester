@@ -56,7 +56,34 @@ systemctl --user stop home-music-watch.timer   # suspendre les futurs cycles
 systemctl --user start home-music-watch.timer
 ```
 
-## Ce que signifie « miroir »
+## Cycle de vie des recommandations
+
+1. Last.fm produit jusqu'à 25 candidats à partir des écoutes et favoris Last.fm du
+   compte configuré. ListenBrainz fournit jusqu'à 25 titres pour chacune de ses
+   sélections Weekly Exploration et Weekly Jams, lorsqu'elles existent.
+2. Chaque lot réussi est conservé sept jours à compter de sa collecte : ce n'est
+   pas un renouvellement fixé au lundi. Les cycles toutes les 15 minutes réutilisent
+   ce lot et complètent les acquisitions, avec dix tentatives maximum partagées
+   entre YouTube et les recommandations, un téléchargement à la fois.
+3. Le miroir public appartient au compte Navidrome configuré (`hugo` actuellement).
+   Il contient seulement les fichiers présents et indexés. Les absents, refus et
+   correspondances ambiguës restent visibles dans `music-playlists report`.
+4. Au renouvellement, la même playlist est mise à jour avec la nouvelle sélection
+   jouable ; elle se complète ensuite. Aucune nouvelle playlist datée n'est créée
+   chaque semaine. Les contenus précédents sont journalisés dans SQLite pour
+   diagnostic/restauration, sans constituer une archive visible dans Navidrome.
+5. Une panne fournisseur conserve le dernier lot réussi. Une réponse vide est
+   signalée et mise en cache sept jours ; elle laisse le miroir précédent intact.
+   `--refresh-recommendations` permet une nouvelle collecte anticipée.
+6. Un titre quittant la sélection reste sur disque et dans la bibliothèque.
+   **Aucun fichier musical n'expire automatiquement aujourd'hui**, favori ou non.
+   La distinction temporaire/permanent et la promotion des favoris restent P4.4.
+
+Le cache HTTP de six heures évite des appels répétés pendant une collecte ; il ne
+remplace pas ce cycle hebdomadaire. `Weekly Mix`, playlist native de titres déjà
+présents et écoutés/favoris, est distincte des recommandations externes.
+
+## Garanties des miroirs
 
 - Nom exact de la source et ordre des morceaux conservés ; un morceau répété n'est
   inclus qu'une fois, conformément à l'invariant d'absence de doublons.
@@ -157,7 +184,11 @@ l'attente des acquisitions en échec. Les statuts distinguent `playable`,
 Le catalogue et les tags sont vérifiés avec les chemins réels ; les tags inchangés
 sont mis en cache par taille/date/inode. Aucun fingerprinting massif.
 
-### Cache des réponses de recommandation (nouvel incrément local)
+### Cache des réponses de recommandation
+
+Déployé sur le serveur le 11 octobre après maintenance, avec contrôle réel de lecture
+Last.fm répétée et de la réponse ListenBrainz vide. Les simulations restent distinctes
+des preuves d'accès aux fournisseurs.
 
 Le worker conserve les réponses réussies des appels de recommandation dans
 `watch.db`, table `recommendation_http_cache`. Une panne au milieu d'une collecte

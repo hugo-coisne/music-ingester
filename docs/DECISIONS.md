@@ -1,5 +1,22 @@
 # Décisions
 
+## 2026-10-11 — Reprise après réarrangement
+
+L'utilisateur annonce la production de nouveau opérationnelle. Vérifier les montages,
+les fichiers importés, le catalogue physique et l'intégrité SQLite avant reprise.
+Sauvegarder/restaurer les états, construire le worker avec les tests, conserver
+image/configuration de retour arrière, puis prévisualiser et synchroniser deux fois
+sans acquisition avant de réactiver le timer. Navidrome n'a pas besoin de redémarrer.
+La réorganisation laisse les 79 imports à leur emplacement prévu ; aucun changement
+de chemin ou migration n'est nécessaire. Aucun scan complet forcé ni purge des neuf
+références historiques absentes. Les radios utilisent uniquement des IDs vérifiés.
+
+La production a évolué vers Navidrome 0.64.2 via son image `latest` existante.
+Cette version est vérifiée pour les miroirs, le catalogue et le streaming ; ne pas
+assimiler ces preuves à une restauration 0.64.2 validée avec l'outil figé en 0.64.0.
+Conserver les échéances hebdomadaires existantes lors de la reprise : la vérification
+des fournisseurs ne doit pas remplacer prématurément une sélection en cours.
+
 ## 2026-10-11 — Restauration guidée avant bascule
 
 Réutiliser le manifeste et la vérification de `music_ingest.backup` ; ne pas créer

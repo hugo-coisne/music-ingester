@@ -20,17 +20,17 @@ Mise à jour : 2026-10-11. Les critères ci-dessous restent ouverts jusqu'à pre
 | P2.4 | DONE | Retry/backoff, quota partagé, taille/espace et ressources bornés ; cycles serveur réels | P2.2 |
 | P2.5 | DONE | Imports réels autorisés, tags/pochettes/indexation, streaming puis second passage sans doublon | Demande d'acquisition reçue |
 | P3.1 | IN_PROGRESS | Adaptateurs externes et catalogue OpenSubsonic faits ; graines locales depuis favoris/histoire restantes | API officielles |
-| P3.2 | IN_PROGRESS | Historique SQLite/provenance/déduplication/exclusions/score faits ; cache HTTP du worker développé et testé localement, déploiement différé ; réconciliation d'identités restante | P3.1 ; fin maintenance bibliothèque pour déployer |
+| P3.2 | IN_PROGRESS | Historique SQLite/provenance/déduplication/exclusions/score faits ; cache HTTP déployé, lecture réelle Last.fm répétée validée ; réconciliation d'identités restante | P3.1 |
 | P3.3 | IN_PROGRESS | Last.fm réel validé ; ListenBrainz testé réellement vide/indisponible, attente de résultats | Fournisseur ListenBrainz |
 | P3.4 | DONE | Clé Last.fm, repli historique complet, deux cycles réels de 25 suggestions sans doublon | Clé fournie et tests réels |
 | P4.1 | DONE | Queue/résolution conservative, acquisitions YouTube réelles et erreurs partielles | P2, P3 |
 | P4.2 | DONE | Cache hebdomadaire, timer 15 min actif, quotas et déclenchement systemd réel vérifiés | P4.1 |
 | P4.3 | DONE | Deux miroirs réels, IDs vérifiés, lecture HTTP audio, second passage idempotent | P4.2 |
-| P4.3a | IN_PROGRESS | Visibilité publique et réparation privé→public validées par API réelle sur laboratoire synthétique ; contrôle production restant | Fin du réarrangement de production |
+| P4.3a | DONE | Réparation privé→public validée au labo ; deux synchronisations production 0.64.2, visibilité publique et idempotence vérifiées | Réaudit et sauvegarde après maintenance |
 | P4.4 | TODO | Favoris conservés, promotion temporaire→permanent, rétention explicite | P4.3 |
 | P4.5 | DONE | E2E synthétique et serveur, succès partiels, reprise et absence de doublons au second passage | P4.1–3 |
 | P4.YT | IN_PROGRESS | Surveillance opérationnelle ; rattrapage des 202 titres en cours, refus 403 signalés | Disponibilité YouTube |
-| P5.1 | IN_PROGRESS | Cinq Smart Playlists et radios artiste/titre/genre implémentées et validées sur Navidrome 0.64 synthétique ; déploiement production restant | Fin maintenance, chemins et catalogue réaudités |
+| P5.1 | IN_PROGRESS | Radios déployées ; Radio — Rock de 25 titres publique/idempotente validée en production 0.64.2 ; cinq Smart Playlists validées au labo, déploiement restant | Catalogue réaudité ; fichiers historiques absents à examiner |
 | P5.2 | BLOCKED | Amperfy/Arpeggi/SubStreamer : streaming, favoris, hors ligne, reconnexion | P1.3–4 et iPhone |
 | P5.3 | TODO | Statut léger, formats limitant transcodage, vérification playlists hebdomadaires | P4 |
 | P5.4 | TODO | Recommandations personnelles pour chaque utilisateur disposant de Last.fm et/ou ListenBrainz configuré et de résultats exploitables ; différé, priorité basse | Usage multiutilisateur futur ; comptes autorisés |
@@ -39,7 +39,7 @@ Mise à jour : 2026-10-11. Les critères ci-dessous restent ouverts jusqu'à pre
 | P6.2 | IN_PROGRESS | Sauvegarde quotidienne et restauration de 11 fichiers validées ; copie externe/audio à préparer | Support de sauvegarde distinct |
 | P6.3 | DONE | Timer verrouillé actif, logs Docker bornés, résumés journald, CPU/RAM mesurés pendant import | P4 |
 | P6.4 | BLOCKED | Import réel d'album autorisé sans conflit avec ingester | Source d'albums autorisée |
-| P6.5 | IN_PROGRESS | Restauration Navidrome isolée en une commande validée ; installation complète, reprise du worker et bascule production restantes | P6.2 ; chemins réels stabilisés après maintenance |
+| P6.5 | IN_PROGRESS | Restauration isolée 0.64.0 validée ; compatibilité production désormais 0.64.2, installation complète, reprise après perte et bascule restantes | P6.2 ; neuf références absentes à résoudre |
 | P6.5a | DONE | CLI recover : snapshot vérifié, Compose isolé, préservation comptes/écoutes/playlists, authentification et streaming ; exercice synthétique réel | Laboratoire Navidrome 0.64 |
 | P7 | BLOCKED | Architecture future vidéo seulement ; aucun déploiement/migration | Validation P0–P6 |
 

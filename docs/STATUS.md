@@ -1,5 +1,56 @@
 # État au 2026-10-11
 
+## Reprise de production après réarrangement — 11 octobre, soirée
+
+- Fin de maintenance annoncée par l'utilisateur. Montages serveur inchangés ;
+  `Managed Singles` reste un dossier distinct, sans lien symbolique. Les 79 imports
+  sont présents. Catalogue : 3 699 références, 3 690 fichiers présents, neuf absences
+  historiques exclues des miroirs. Trois bases SQLite : `quick_check=ok`.
+- Production maintenant **Navidrome 0.64.2 (10114574)**, image configurée `latest`
+  par l'installation existante. Aucun redémarrage ou remplacement de Navidrome ici.
+  Authentification, 3 690 IDs reliés aux fichiers réels et lecture native vérifiées
+  (16 Kio identiques au fichier). Ce changement de version impose une nouvelle
+  validation de restauration ; le laboratoire `recover` reste validé sur 0.64.0.
+- Sauvegarde préalable `backups/auto-20261011T170147Z-88766117` : **11 fichiers
+  vérifiés et restaurés en isolation**, sans musique incluse.
+  Sauvegarde après reprise également vérifiée/restaurée :
+  `backups/auto-20261011T172043Z-950cec7d`, 11 fichiers incluant les nouveaux états
+  et la configuration de l'image activée.
+- `make test` : **144 tests réussis** ; construction Docker serveur : **144 réussis**
+  en 102,27 s. Release serveur `release-resume-20261011`, image activée
+  `sha256:1b44a6ee76105818b14f2bd1711230c8c529515a77188301f17f374e09d04d54`.
+  `.env.before-resume-20261011` et `music-playlists.before-resume-20261011` conservés.
+- Prévisualisation puis deux synchronisations réelles **sans acquisition** réussies :
+  miroir YouTube `music` 84/202, Last.fm 21/25 ; mêmes IDs, publics, `changed=false`.
+  La lecture API vérifie effectivement la visibilité publique en production (P4.3a).
+- Cache HTTP déployé et lecture Last.fm répétée vérifiée sur l'API réelle ; deux
+  entrées de cache après contrôle des fournisseurs. ListenBrainz répond toujours
+  sans candidat pour `Barge9757` ; aucun lot inventé ni sélection remplacée pour cet essai.
+- Radios déployées dans le worker et le script serveur : **Radio — Rock**, 25 titres
+  réels, publique, seconde exécution idempotente. Essai Electronic vide (genre absent),
+  sans création de miroir. Les cinq Smart Playlists restent validées seulement au labo.
+- `home-music-watch.timer` réactivé (`active/enabled`), cycle normal lancé via
+  `systemctl --user start --no-block home-music-watch.service`. Le timer de sauvegarde
+  quotidien est également `active/enabled`. Premier cycle repris à 17:10 UTC :
+  cinq tentatives, **quatre acquisitions indexées**, YouTube **88/202**, Last.fm
+  **21/25** (quatre en backoff). Un refus HTTP 403, 113 titres YouTube en attente de
+  quota ; aucune erreur de miroir/fournisseur, ListenBrainz vide signalé. Le service
+  termine en code 1 pour cet échec partiel, mais le timer reste actif et relance les
+  cycles suivants. Le rapport distingue les succès du téléchargement refusé.
+- Passage automatique suivant à **17:16 UTC** : cinq autres acquisitions réussies,
+  miroir YouTube **93/202**, un refus en backoff, 108 titres en attente de quota.
+  Last.fm reste à 21/25, miroirs sans erreur, timer toujours actif. Neuf fichiers
+  acquis depuis la reprise. Mesure ponctuelle Navidrome : 147,2 Mio et 0,66 % CPU ;
+  ce relevé n'est pas une mesure du pic du worker (déjà terminé).
+- Cycle de vie précisé dans `docs/PLAYLIST_SYNC.md` : lot renouvelé après sept jours,
+  remplissage toutes les 15 minutes, même miroir remplacé, fichiers conservés sans
+  expiration. Prochaine collecte Last.fm attendue le **18 octobre vers 07:15 Paris**,
+  au premier cycle après échéance. P4.4 reste à implémenter.
+
+Suite : rétention/promotion en sandbox (P4.4), déploiement prudent des Smart Playlists,
+compatibilité de restauration avec la production 0.64.2, puis accès privé/essais iOS.
+Les entrées ci-dessous sont historiques ; la suspension de maintenance est levée.
+
 ## P6.5 — restauration guidée validée en laboratoire
 
 - Nouveau `music_ingest recover`, exposé par `make recovery-preview` et `make recover`.

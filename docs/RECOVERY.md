@@ -5,6 +5,12 @@ Compose distinct. Elle conserve l'ensemble du snapshot, dont les états de l'ing
 mais ne réactive ni les acquisitions, ni les timers, ni les scrobblers. La bascule de
 production et la remise en service complète du worker restent des étapes séparées.
 
+État du 11 octobre : le laboratoire et l'image de cette commande sont en **0.64.0**,
+alors que le serveur de production est désormais en **0.64.2**. La restauration de
+ses nouveaux snapshots avec cette image n'est pas validée ; ne pas l'utiliser comme
+procédure de reprise de production avant adaptation et exercice de compatibilité.
+Les neuf références historiques sans fichier empêchent aussi la validation stricte.
+
 ## Préparer les entrées
 
 Sur la machine qui héberge Docker, disposer de Python et des dépendances du dépôt

@@ -50,11 +50,11 @@ Le multiutilisateur personnalisé reste différé. Un compte sans écoutes/favor
 reçoit pas un mix inventé. `Weekly Mix` conserve sa sélection une semaine après
 évaluation, pas nécessairement du lundi au dimanche.
 
-Après la maintenance, inventorier les playlists existantes, choisir un dossier neuf
+Avant le déploiement, inventorier les playlists existantes, choisir un dossier neuf
 géré dans la bibliothèque, adapter le filtre `filepath` de Fresh Discoveries à
 l'emplacement réel et y copier les `.nsp`. Navidrome les importe au scan ; vérifier
-le propriétaire, le statut public et le contenu. Aucun modèle n'a été installé dans
-la bibliothèque de production pendant son réarrangement. Vérifier les fichiers
+le propriétaire, le statut public et le contenu. Aucun modèle n'a encore été installé
+dans la bibliothèque de production. Vérifier les fichiers
 historiquement manquants avant de valider ce déploiement.
 
 Référence : [Smart Playlists Navidrome](https://www.navidrome.org/docs/usage/features/smart-playlists/).
@@ -73,9 +73,10 @@ le défaut et `--apply` crée/met à jour une playlist publique gérée. Exemple
 
 Les IDs sont ceux de Navidrome, disponibles dans les liens de son interface ou son
 API. La version mise à jour du script serveur fournit aussi
-`./music-playlists radio --genre Electronic --apply` après déploiement de l'image
-et du script. Ce déploiement attend la fin de maintenance ; l'image de production
-actuelle ne contient pas encore cette commande.
+`./music-playlists radio --genre Rock --apply`. Image et script sont déployés depuis
+la reprise du 11 octobre : `Radio — Rock`, 25 morceaux présents, publique et
+idempotente, a été vérifiée sur la production 0.64.2. Le genre Electronic était
+absent du catalogue réel ; aucune radio vide n'a été créée pour cet essai.
 
 Les radios par artiste et morceau interrogent `getSimilarSongs2` avec l'ID artiste ;
 en cas d'indisponibilité elles utilisent les titres locaux du même artiste (au plus
