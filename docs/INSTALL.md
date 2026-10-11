@@ -1,5 +1,20 @@
 # Installation et validation
 
+## Portée de la procédure actuelle
+
+La remise en place est documentée mais nécessite plusieurs étapes : Navidrome
+ci-dessous, worker et timers dans [PLAYLIST_SYNC.md](PLAYLIST_SYNC.md), sauvegardes
+et restauration dans [BACKUP_RESTORE.md](BACKUP_RESTORE.md). Il n'existe pas encore
+d'installateur complet en une commande ; cet objectif est suivi en P6.5.
+`make install` ne prépare que l'environnement Python local ; `make start` suppose
+déjà disponibles les configurations, chemins, données et image Docker.
+
+En cas de perte de l'installation, conserver hors du serveur le dépôt, les
+configurations/secrets, les sauvegardes cohérentes des bases (dont `watch.db` pour
+la propriété des miroirs) et la musique. Les sauvegardes automatiques actuelles
+n'incluent pas les fichiers audio. Les restaurations isolées validées ne constituent
+pas encore un test de réinstallation complète sur une machine vierge.
+
 ## Poste de développement
 
 Python 3.10+ ; FFmpeg/ffprobe, Chromaprint et Deno sont utilisés par l'ingester

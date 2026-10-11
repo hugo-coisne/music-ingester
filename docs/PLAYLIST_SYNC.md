@@ -1,11 +1,27 @@
 # Playlists surveillées et recommandations
 
 `music_ingest watch` réutilise le moteur d'import existant. Il lit une liste d'IDs
-YouTube Music, importe les titres absents et crée des miroirs privés dans le compte
+YouTube Music, importe les titres absents et crée des miroirs dans le compte
 Navidrome configuré. Les identifiants et mots de passe ne figurent jamais dans les
 URLs ; les requêtes OpenSubsonic utilisent POST. HTTP est limité à la boucle locale.
 
 ## Utilisation sur le serveur
+
+Depuis une session SSH sur le serveur, ajouter une playlist en une commande :
+
+```sh
+/home/hugo/docker/home-music/automation/music-playlists add 'PL_ID_DE_LA_PLAYLIST'
+```
+
+Prendre la valeur du paramètre `list=` dans l'URL YouTube Music, jusqu'au prochain
+`&` s'il existe. Par exemple, `https://music.youtube.com/playlist?list=PL_EXEMPLE`
+donne l'ID `PL_EXEMPLE`. Le prochain cycle automatique prend cet ajout en compte ;
+aucun redémarrage n'est nécessaire. Les acquisitions restent soumises aux quotas
+et à la disponibilité de la source, le miroir peut donc se remplir sur plusieurs cycles.
+
+Actuellement, la liste est unique et les miroirs appartiennent au compte `hugo`.
+Les miroirs `music` et `Discover Weekly — Last.fm` ont été observés publics dans
+Navidrome. La gestion personnelle par utilisateur est prévue en P5.4/P5.5, différée.
 
 Le déploiement de cette installation utilise
 `/home/hugo/docker/home-music/automation`. Depuis une session SSH sur le serveur :
@@ -85,6 +101,10 @@ signalées. La demande d'automatisation du 10 octobre remplace la limitation ant
 aux essais synthétiques ; elle ne garantit pas la disponibilité de tout le catalogue.
 
 ## Installation reproductible
+
+Cette procédure est manuelle : il n'existe pas encore de commande unique qui
+réinstalle l'ensemble de la plateforme ou restaure une installation perdue.
+Voir aussi `INSTALL.md` et `BACKUP_RESTORE.md` ; simplification suivie en P6.5.
 
 1. Construire `docker build --target production -t music-ingester:watch .` ; les
    tests sont obligatoires dans la construction. Relever l'ID `docker image inspect`.

@@ -1,5 +1,19 @@
 # État au 2026-10-11
 
+## Documentation et évolutions différées — 11 octobre
+
+- P5.4/P5.5 ajoutées à la roadmap : recommandations et listes YouTube par utilisateur.
+  Priorité basse, explicitement différées ; aucune implémentation ni modification serveur.
+- Configuration actuelle confirmée en lecture seule : worker connecté en `hugo`,
+  Last.fm `macarena3897`, ListenBrainz `Barge9757`. Les miroirs `music` et
+  `Discover Weekly — Last.fm` appartiennent à `hugo` et sont actuellement publics.
+- Ajout de playlists documenté avec une commande utilisant le chemin absolu du script.
+- Installation et restauration documentées mais encore manuelles en plusieurs étapes.
+  `make install` installe uniquement l'environnement Python, pas la plateforme.
+  P6.5 suit l'objectif de réinstallation en une commande après préparation des entrées.
+- Validation de cet incrément : lecture des scripts et procédures, `git diff --check` ;
+  aucun code exécutable modifié, pas de nouvelle preuve de restauration complète.
+
 ## Diagnostic scrobbling Last.fm — 11 octobre
 
 - Conteneur de production recréé à 06:10 UTC ; `ND_LASTFM_APIKEY` et

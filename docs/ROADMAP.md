@@ -32,13 +32,38 @@ Mise à jour : 2026-10-11. Les critères ci-dessous restent ouverts jusqu'à pre
 | P5.1 | TODO | Smart playlists et radios locales artiste/titre/genre | P3, P4 |
 | P5.2 | BLOCKED | Amperfy/Arpeggi/SubStreamer : streaming, favoris, hors ligne, reconnexion | P1.3–4 et iPhone |
 | P5.3 | TODO | Statut léger, formats limitant transcodage, vérification playlists hebdomadaires | P4 |
+| P5.4 | TODO | Recommandations personnelles pour chaque utilisateur disposant de Last.fm et/ou ListenBrainz configuré et de résultats exploitables ; différé, priorité basse | Usage multiutilisateur futur ; comptes autorisés |
+| P5.5 | TODO | Liste de playlists YouTube propre à chaque utilisateur, administrable par celui-ci, miroirs dans son compte Navidrome ; différé, priorité basse | Usage multiutilisateur futur ; authentification et propriété des miroirs |
 | P6.1 | TODO | Lidarr optionnel, dossier albums distinct, listes artistes/profils qualité | P2 stabilisée |
 | P6.2 | IN_PROGRESS | Sauvegarde quotidienne et restauration de 11 fichiers validées ; copie externe/audio à préparer | Support de sauvegarde distinct |
 | P6.3 | DONE | Timer verrouillé actif, logs Docker bornés, résumés journald, CPU/RAM mesurés pendant import | P4 |
 | P6.4 | BLOCKED | Import réel d'album autorisé sans conflit avec ingester | Source d'albums autorisée |
+| P6.5 | TODO | Installation/restauration guidée par une commande après fourniture des chemins, secrets et sauvegardes ; validation sur environnement vierge | P6.2 ; actuellement procédure manuelle documentée |
 | P7 | BLOCKED | Architecture future vidéo seulement ; aucun déploiement/migration | Validation P0–P6 |
 
 ## Critères de passage
+
+### Évolutions multiutilisateurs différées — demande du 11 octobre
+
+P5.4 et P5.5 sont à conserver pour le futur partage du serveur. L'utilisateur est
+seul à ce jour : ne pas commencer leur implémentation maintenant.
+
+- P5.4 : associer chaque compte Navidrome à ses fournisseurs autorisés ; Last.fm
+  seul, ListenBrainz seul ou les deux doivent fonctionner. Générer les recommandations
+  dans le compte concerné seulement si les fournisseurs ont des résultats exploitables.
+  Un compte vide, indisponible ou non configuré ne produit pas de suggestions inventées
+  et n'empêche pas le traitement des autres comptes. Le scrobbling et l'autorisation
+  de lecture des recommandations restent des fonctions distinctes.
+- P5.5 : chaque utilisateur peut ajouter, lister et retirer ses propres IDs YouTube
+  via un moyen simple à définir, sans accès administrateur au serveur. Conserver le nom
+  et l'ordre des titres jouables dans ses miroirs, avec statut des titres indisponibles.
+  Retirer un abonnement ne supprime pas les fichiers partagés.
+- Pour les deux : isoler les secrets, la propriété, les listes et rapports par compte ;
+  définir explicitement la visibilité des playlists ; réutiliser les fichiers autorisés
+  déjà présents sans téléchargement en double. Conserver un worker avec quotas équitables.
+  Tester l'isolation entre comptes et la reprise idempotente avant activation.
+
+### Validation des phases
 
 - P0 : inventaire réel, aucune altération de bibliothèque, sauvegarde restaurable.
 - P1 : nouvelle instance lit les fichiers réels ; lecture authentifiée, favoris et
