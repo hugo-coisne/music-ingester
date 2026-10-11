@@ -17,6 +17,9 @@ La feuille de route distingue réalisation, tests simulés et validation sur ser
 - Actualiser STATUS et les tâches ROADMAP à chaque incrément.
 - Laboratoire synthétique local : `make lab`, `make lab-check`, `make lab-stop` ;
   voir `docs/LOCAL_PLAYLISTS.md`. Ne jamais y monter les dossiers de production.
+- Restauration isolée : `make recovery-preview` / `make recover` avec
+  `RECOVERY_CONFIG=...` ; `docs/RECOVERY.md`. Ne pas confondre cette validation
+  Navidrome avec une bascule de production ou une reprise de l'ingester.
 - Maintenance utilisateur en cours : ne pas redémarrer Navidrome de production
   ni réactiver `home-music-watch.timer` avant la fin annoncée et le réaudit des chemins.
 - P5.4/P5.5 (multiutilisateur) explicitement différées, ne pas les implémenter maintenant.

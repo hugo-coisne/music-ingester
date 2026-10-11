@@ -62,3 +62,10 @@ lab-check:
 	$(PYTHON) scripts/navidrome_lab.py check --root "$(LAB_ROOT)"
 lab-stop:
 	$(PYTHON) scripts/navidrome_lab.py stop --root "$(LAB_ROOT)"
+
+RECOVERY_CONFIG ?= recovery.local.json
+.PHONY: recovery-preview recover
+recovery-preview:
+	$(PYTHON) -m music_ingest recover --config "$(RECOVERY_CONFIG)"
+recover:
+	$(PYTHON) -m music_ingest recover --config "$(RECOVERY_CONFIG)" --apply

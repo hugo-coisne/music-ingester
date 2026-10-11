@@ -1,5 +1,11 @@
 # Sauvegarde et restauration
 
+La commande `make recover RECOVERY_CONFIG=recovery.local.json` restaure et valide
+Navidrome dans une nouvelle instance locale depuis un snapshot et la musique
+disponible séparément. Voir [RECOVERY.md](RECOVERY.md) pour les entrées, vérifications
+et limites. Les autres bases et configurations sont conservées en archive ; la
+réactivation de l'ingester et une bascule de production restent séparées.
+
 Une sauvegarde de base n'est pas une sauvegarde audio. Prévoir un support séparé
 pour musique, sauvegardes et configurations. Les configurations et SQLite peuvent
 contenir des secrets, comptes et habitudes d'écoute : ne jamais les committer.

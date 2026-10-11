@@ -22,6 +22,11 @@ disponibles : `make lab` lance Navidrome isolé et vérifie le streaming, les mi
 publics, cinq Smart Playlists et les radios artiste/morceau/genre. Aucun volume de
 production n'est monté dans ce laboratoire.
 
+La [restauration guidée](docs/RECOVERY.md) permet désormais de reconstruire et
+vérifier une copie Navidrome depuis un snapshot :
+`make recover RECOVERY_CONFIG=recovery.local.json`. Les chemins doivent être
+renseignés et la musique disponible séparément ; le worker n'est pas réactivé.
+
 # Music ingestion
 
 A Python CLI that imports a YouTube Music playlist into a tagged M4A library.

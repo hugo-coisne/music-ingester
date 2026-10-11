@@ -1,5 +1,21 @@
 # Décisions
 
+## 2026-10-11 — Restauration guidée avant bascule
+
+Réutiliser le manifeste et la vérification de `music_ingest.backup` ; ne pas créer
+un second format de sauvegarde. `recover` conserve toutes les entrées en archive,
+prépare une copie de travail Navidrome et génère un Compose connu. Les anciens
+Compose/configurations sont conservés, mais pas exécutés : ils peuvent contenir des
+ports publics, scrobblers ou chemins incompatibles avec une restauration isolée.
+
+Destination neuve obligatoire, image 0.64.0 figée, musique RO, bibliothèque unique
+`/music`, refus d'un fichier absent et d'un projet Compose déjà occupé. Le contrôle
+compare les tables persistantes (hors dates d'accès utilisateur) puis authentifie
+le compte sauvegardé et lit un flux. En échec, arrêt limité à la nouvelle copie,
+fichiers conservés et résultat explicite. Les IDs/jetons de `watch.db` sont archivés
+sans réécriture ; reprise des acquisitions différée jusqu'au réaudit des chemins.
+P6.5 reste partielle : cette commande ne déploie pas encore toute l'automatisation.
+
 ## 2026-10-11 — Laboratoire local et playlists natives
 
 Pendant le réarrangement utilisateur, utiliser Docker sur le poste Pop!_OS avec

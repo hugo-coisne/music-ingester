@@ -17,6 +17,8 @@
 | Logs limités | `make logs` |
 | Sauvegarder ingestion locale | `make backup DEST=backups/new-name` |
 | Vérifier / restaurer en isolation | `make verify-backup SOURCE=...` / `make restore SOURCE=... DEST=...` |
+| Prévisualiser une reconstruction Navidrome | `make recovery-preview RECOVERY_CONFIG=recovery.local.json` |
+| Restaurer, démarrer et vérifier une copie Navidrome | `make recover RECOVERY_CONFIG=recovery.local.json` |
 
 Le défaut Makefile est sandbox. `retry` réexécute la playlist en réutilisant les
 imports terminés ; ce n'est pas encore une commande filtrant exclusivement les

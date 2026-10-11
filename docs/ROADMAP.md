@@ -39,7 +39,8 @@ Mise à jour : 2026-10-11. Les critères ci-dessous restent ouverts jusqu'à pre
 | P6.2 | IN_PROGRESS | Sauvegarde quotidienne et restauration de 11 fichiers validées ; copie externe/audio à préparer | Support de sauvegarde distinct |
 | P6.3 | DONE | Timer verrouillé actif, logs Docker bornés, résumés journald, CPU/RAM mesurés pendant import | P4 |
 | P6.4 | BLOCKED | Import réel d'album autorisé sans conflit avec ingester | Source d'albums autorisée |
-| P6.5 | TODO | Installation/restauration guidée par une commande après fourniture des chemins, secrets et sauvegardes ; validation sur environnement vierge | P6.2 ; actuellement procédure manuelle documentée |
+| P6.5 | IN_PROGRESS | Restauration Navidrome isolée en une commande validée ; installation complète, reprise du worker et bascule production restantes | P6.2 ; chemins réels stabilisés après maintenance |
+| P6.5a | DONE | CLI recover : snapshot vérifié, Compose isolé, préservation comptes/écoutes/playlists, authentification et streaming ; exercice synthétique réel | Laboratoire Navidrome 0.64 |
 | P7 | BLOCKED | Architecture future vidéo seulement ; aucun déploiement/migration | Validation P0–P6 |
 
 ## Critères de passage

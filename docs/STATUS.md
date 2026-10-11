@@ -1,5 +1,35 @@
 # État au 2026-10-11
 
+## P6.5 — restauration guidée validée en laboratoire
+
+- Nouveau `music_ingest recover`, exposé par `make recovery-preview` et `make recover`.
+  Configuration d'exemple dans `deployment/recovery.example.json`, procédure dans
+  `docs/RECOVERY.md`. La simulation ne crée rien et n'appelle pas Docker.
+- Snapshot vérifié, destination neuve, contrôles des chemins/fichiers/espace/port,
+  refus de réutiliser un projet Compose occupé ; musique RO et écoute boucle locale.
+  Scans, plugins, services externes et scrobbling restent désactivés sur la copie.
+- Les dix fichiers de la sauvegarde synthétique sont restaurés et vérifiés, dont
+  `watch.db` strictement identique (propriété des miroirs conservée). La base Navidrome
+  de travail est copiée depuis l'archive sans modifier cette dernière.
+- Test réel de la CLI : `tests/recovery_smoke.py --work artifacts/recovery-cli-20261011`.
+  Un compte, quatre annotations, neuf playlists, 22 associations, quatre morceaux
+  et trois écoutes préservés ; file de scrobbling vide conservée. Comparaison par
+  empreintes des lignes persistantes, puis authentification et streaming natif vérifiés
+  sur `127.0.0.1:15436` (premiers 16 Kio identiques au fichier).
+- Les deux copies de restauration utilisées pour les essais sont arrêtées. Le
+  laboratoire principal reste disponible sur 15435 ; aucune modification du serveur
+  Ubuntu ou de sa bibliothèque en cours de réarrangement.
+- `make test` : **144 tests réussis**, dont 11 tests de restauration guidée
+  (corruption, chevauchement, manque d'espace, fichiers absents, permissions,
+  ambiguïté, interruption et préservation sur échec). `git diff --check` réussi.
+- Preuve privée : `artifacts/recovery-cli-20261011/restored/recovery-result.json`.
+  Seule la restauration Navidrome isolée est validée en une commande. Réinstallation
+  complète sur machine vierge, reprise automatique du worker et bascule de production
+  restent ouvertes en P6.5 ; sauvegarde externe/audio toujours à préparer en P6.2.
+
+Prochain incrément indépendant possible : conservation/promotion des découvertes
+en sandbox (P4.4). La production attend la fin annoncée du réarrangement et le réaudit.
+
 ## Laboratoire isolé et playlists locales — 11 octobre
 
 - Autorisation reçue de créer une autre instance pendant le réarrangement.

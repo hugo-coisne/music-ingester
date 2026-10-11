@@ -12,14 +12,19 @@ La remise en place est documentée mais nécessite plusieurs étapes : Navidrome
 ci-dessous, worker et timers dans [PLAYLIST_SYNC.md](PLAYLIST_SYNC.md), sauvegardes
 et restauration dans [BACKUP_RESTORE.md](BACKUP_RESTORE.md). Il n'existe pas encore
 d'installateur complet en une commande ; cet objectif est suivi en P6.5.
+La [restauration Navidrome isolée](RECOVERY.md) est désormais disponible en une
+commande : `make recover RECOVERY_CONFIG=recovery.local.json`, après préparation
+des chemins et d'un snapshot contenant les identifiants du compte de validation.
+Elle restaure les autres bases/configurations en archive, sans relancer le worker.
 `make install` ne prépare que l'environnement Python local ; `make start` suppose
 déjà disponibles les configurations, chemins, données et image Docker.
 
 En cas de perte de l'installation, conserver hors du serveur le dépôt, les
 configurations/secrets, les sauvegardes cohérentes des bases (dont `watch.db` pour
 la propriété des miroirs) et la musique. Les sauvegardes automatiques actuelles
-n'incluent pas les fichiers audio. Les restaurations isolées validées ne constituent
-pas encore un test de réinstallation complète sur une machine vierge.
+n'incluent pas les fichiers audio. La restauration avec démarrage et streaming est
+validée sur données synthétiques dans un dossier neuf ; une réinstallation complète
+de la production et du worker sur machine vierge reste à tester.
 
 ## Poste de développement
 
