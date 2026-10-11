@@ -1,5 +1,14 @@
 # Décisions
 
+## 2026-10-11 — Visibilité publique des miroirs
+
+À la demande de l'utilisateur, les miroirs YouTube et recommandations gérés par
+le worker doivent être publics dans Navidrome. Remplacer `public=false` par
+`public=true`, inclure la visibilité dans la détection des changements et vérifier
+le résultat API. Les protections de propriété restent obligatoires : aucune
+playlist personnelle n'est rendue publique par ce traitement. La politique par
+utilisateur futur reste à définir en P5.4/P5.5.
+
 ## 2026-10-10 — Conservation du dépôt
 
 Le package reste à la racine. Déplacer vers `apps/music-ingest` casserait les chemins

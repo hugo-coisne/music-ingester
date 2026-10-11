@@ -1,5 +1,22 @@
 # État au 2026-10-11
 
+## Maintenance bibliothèque et correctif de visibilité — 11 octobre
+
+- L'utilisateur a arrêté Navidrome pour réarranger sa bibliothèque. Ne pas le
+  redémarrer ni reprendre les imports avant la fin annoncée de cette maintenance
+  et la vérification des nouveaux chemins. Aucun worker actif au dernier contrôle.
+- Correctif des miroirs publics : `public=true`, réparation des miroirs privés même
+  sans changement de titres, contrôle du résultat API. **118 tests passent** en
+  local et dans la construction serveur (Python 3.12).
+- Image activée dans le Compose du worker :
+  `sha256:f7003b41023be39ef2ecfa540ffd47a07618584aadf226787bf7b9890689331f`.
+  Ancien `.env` conservé sous `.env.before-public-20261011` ; release source
+  `release-public-20261011`. Sauvegarde préalable et restauration isolée : 11 fichiers
+  vérifiés, `backups/auto-20261011T101619Z-12435454`.
+- Vérification réelle interrompue par l'indisponibilité de Navidrome, avant la
+  mise à jour des miroirs : ne pas déclarer leur visibilité validée sur le serveur.
+  Refaire le contrôle public et l'idempotence après la maintenance.
+
 ## Documentation et évolutions différées — 11 octobre
 
 - P5.4/P5.5 ajoutées à la roadmap : recommandations et listes YouTube par utilisateur.

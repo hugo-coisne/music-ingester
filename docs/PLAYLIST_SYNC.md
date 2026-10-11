@@ -1,7 +1,7 @@
 # Playlists surveillées et recommandations
 
 `music_ingest watch` réutilise le moteur d'import existant. Il lit une liste d'IDs
-YouTube Music, importe les titres absents et crée des miroirs dans le compte
+YouTube Music, importe les titres absents et crée des miroirs publics dans le compte
 Navidrome configuré. Les identifiants et mots de passe ne figurent jamais dans les
 URLs ; les requêtes OpenSubsonic utilisent POST. HTTP est limité à la boucle locale.
 
@@ -66,6 +66,10 @@ systemctl --user start home-music-watch.timer
 - Une erreur de lecture de la source ne vide pas la playlist existante. Une source
   effectivement vide peut vider son miroir, sans supprimer les fichiers.
 - Les playlists personnelles, même de même nom, ne sont pas adoptées/modifiées.
+- Les miroirs gérés sont rendus publics à leur finalisation et maintenus publics
+  lors des synchronisations. Un miroir passé manuellement en privé sera republié
+  au prochain cycle, même si ses morceaux n'ont pas changé. Le statut public est
+  relu via l'API avant de considérer la synchronisation réussie.
 - Le journal SQLite attribue un marqueur unique à chaque miroir avant sa création.
   Une interruption après création est récupérable. Le contenu antérieur de chaque
   miroir modifié est conservé dans `playlist_backups`.

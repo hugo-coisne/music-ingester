@@ -46,6 +46,8 @@ class FakeAPI:
             if 'songIndexToRemove' in params:
                 playlist['entry'] = [x for i, x in enumerate(playlist['entry']) if i not in params['songIndexToRemove']]
             self.playlists[params['playlistId']].update({k: v for k, v in params.items() if k != 'playlistId'})
+            if 'public' in params:
+                playlist['public'] = params['public'] == 'true'
             return {}
         raise AssertionError(endpoint)
 
@@ -61,6 +63,7 @@ class WatchTests(TemporaryTest):
         result = mirror(self.api, self.db, 'youtube:source', 'Source', ['b', 'a', 'b'])
         key = result['id']
         self.assertEqual(self.api.playlists[key]['entry'], [{'id': 'b'}, {'id': 'a'}])
+        self.assertIs(self.api.playlists[key]['public'], True)
         mutations = self.api.mutations
         self.assertFalse(mirror(self.api, self.db, 'youtube:source', 'Source', ['b', 'a'])['changed'])
         self.assertEqual(mutations, self.api.mutations)
@@ -69,6 +72,25 @@ class WatchTests(TemporaryTest):
         self.assertEqual(self.api.playlists[key]['name'], 'Renamed')
         self.assertEqual(self.api.playlists['personal']['entry'], [{'id': 'personal-song'}])
         self.assertGreater(self.db.execute('SELECT count(*) FROM playlist_backups').fetchone()[0], 0)
+
+    def test_private_mirror_becomes_public_without_changing_tracks(self):
+        key = mirror(self.api, self.db, 'source', 'Source', ['a'])['id']
+        self.api.playlists[key]['public'] = False
+        personal = self.api.playlists['personal'].copy()
+        self.assertTrue(mirror(self.api, self.db, 'source', 'Source', ['a'])['changed'])
+        self.assertIs(self.api.playlists[key]['public'], True)
+        self.assertEqual(self.api.playlists[key]['entry'], [{'id': 'a'}])
+        self.assertEqual(self.api.playlists['personal'], personal)
+        self.assertFalse(mirror(self.api, self.db, 'source', 'Source', ['a'])['changed'])
+
+    def test_visibility_rejected_by_server_fails_verification(self):
+        call = self.api.call
+        def ignore_visibility(endpoint, **params):
+            params.pop('public', None)
+            return call(endpoint, **params)
+        self.api.call = ignore_visibility
+        with self.assertRaisesRegex(SubsonicError, 'verification failed'):
+            mirror(self.api, self.db, 'source', 'Source', ['a'])
 
     def test_recovery_after_remote_create_before_local_commit(self):
         self.api.fail_after_create = True

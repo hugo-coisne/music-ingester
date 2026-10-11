@@ -126,7 +126,8 @@ def mirror(api, db, source, name, song_ids):
     if current.get('readonly'):
         raise SubsonicError('Playlist is read-only')
     old_ids = [song['id'] for song in current.get('entry', [])]
-    changed = old_ids != ids or current.get('name') != name or current.get('comment') != marker
+    changed = (old_ids != ids or current.get('name') != name
+               or current.get('comment') != marker or current.get('public') is not True)
     if changed:
         with db:
             db.execute('INSERT INTO playlist_backups(source,payload) VALUES (?,?)',
@@ -138,8 +139,9 @@ def mirror(api, db, source, name, song_ids):
                 # Navidrome 0.64 treats createPlaylist without songId as no replacement.
                 api.call('updatePlaylist', playlistId=playlist_id,
                          songIndexToRemove=list(range(len(old_ids))))
-        api.call('updatePlaylist', playlistId=playlist_id, name=name, comment=marker, public='false')
+        api.call('updatePlaylist', playlistId=playlist_id, name=name, comment=marker, public='true')
     verified = api.call('getPlaylist', id=playlist_id)['playlist']
-    if verified['name'] != name or [s['id'] for s in verified.get('entry', [])] != ids:
+    if (verified['name'] != name or [s['id'] for s in verified.get('entry', [])] != ids
+            or verified.get('public') is not True):
         raise SubsonicError('Playlist verification failed')
     return dict(id=playlist_id, changed=changed, playable=len(ids))

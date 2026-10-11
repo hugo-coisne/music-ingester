@@ -26,6 +26,7 @@ Mise à jour : 2026-10-11. Les critères ci-dessous restent ouverts jusqu'à pre
 | P4.1 | DONE | Queue/résolution conservative, acquisitions YouTube réelles et erreurs partielles | P2, P3 |
 | P4.2 | DONE | Cache hebdomadaire, timer 15 min actif, quotas et déclenchement systemd réel vérifiés | P4.1 |
 | P4.3 | DONE | Deux miroirs réels, IDs vérifiés, lecture HTTP audio, second passage idempotent | P4.2 |
+| P4.3a | BLOCKED | Visibilité publique imposée et testée (118 tests), image activée ; vérification API réelle restante | Navidrome arrêté par utilisateur pour réarrangement |
 | P4.4 | TODO | Favoris conservés, promotion temporaire→permanent, rétention explicite | P4.3 |
 | P4.5 | DONE | E2E synthétique et serveur, succès partiels, reprise et absence de doublons au second passage | P4.1–3 |
 | P4.YT | IN_PROGRESS | Surveillance opérationnelle ; rattrapage des 202 titres en cours, refus 403 signalés | Disponibilité YouTube |
