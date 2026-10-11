@@ -35,13 +35,15 @@ def prepare_track(
     return PreparedTrack(filepath, tags, artwork_failed=outcome is artwork.ArtworkOutcome.FAILED)
 
 
-def run_sync(client: MusicClient, playlist_id: str, config: Config, list_only: bool = False) -> int:
+def run_sync(client: MusicClient, playlist_id: str, config: Config, list_only: bool = False,
+             *, library_index=None, max_bytes=None) -> int:
     """Process a playlist, report counts, and return a shell-compatible exit code."""
     summary = SyncSummary()
     albums = AlbumCache(client)
     playlist = client.get_playlist(playlist_id, limit=None)
     tracks = playlist.get("tracks") or []
-    library_index = library.build_library_index(*config.reference_libraries, config.library_dir)
+    if library_index is None:
+        library_index = library.build_library_index(*config.reference_libraries, config.library_dir)
     fingerprints = FingerprintMatcher(library_index)
     if not list_only:
         config.staging_dir.mkdir(parents=True, exist_ok=True)
@@ -92,9 +94,12 @@ def run_sync(client: MusicClient, playlist_id: str, config: Config, list_only: b
                 if filepath:
                     print(f"[RESUME] {display} -> {filepath}")
                 else:
+                    options = {'max_bytes': max_bytes} if max_bytes else {}
                     filepath = download.download(
-                        video_id, config.staging_dir, config.download_timeout,
+                        video_id, config.staging_dir, config.download_timeout, **options,
                     )
+                if max_bytes and filepath.stat().st_size > max_bytes:
+                    raise RuntimeError('Audio exceeds configured size limit')
                 history.mark_stage(db, video_id, "downloaded", filepath)
                 audio = MutagenFile(filepath)
                 if not audio or not audio.info:

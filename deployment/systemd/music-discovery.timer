@@ -1,0 +1,11 @@
+[Unit]
+Description=Weekly Home Music recommendations
+
+[Timer]
+OnCalendar=Mon *-*-* 06:00:00
+RandomizedDelaySec=30min
+Persistent=true
+Unit=music-discovery.service
+
+[Install]
+WantedBy=timers.target

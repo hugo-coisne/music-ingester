@@ -1,3 +1,32 @@
+# Home Music Platform
+
+Le projet continue comme socle de la plateforme musicale : [état réel](docs/STATUS.md),
+[feuille de route](docs/ROADMAP.md), [audit](docs/AUDIT.md),
+[installation](docs/INSTALL.md) et [sauvegarde/restauration](docs/BACKUP_RESTORE.md).
+Le moteur et ses commandes historiques ci-dessous restent conservés.
+Le [module Discovery](docs/DISCOVERY.md) fournit une commande de recommandations
+avec simulation par défaut. La [synchronisation surveillée](docs/PLAYLIST_SYNC.md)
+importe les titres manquants, crée leurs miroirs Navidrome et renouvelle les
+recommandations. Son timer est déployé ; les exemples restent en simulation jusqu'à
+configuration explicite. Ajout rapide sur le serveur :
+
+```sh
+cd /home/hugo/docker/home-music/automation
+./music-playlists add ID_YOUTUBE_MUSIC
+./music-playlists status
+```
+
+Pendant le réarrangement de la bibliothèque, les imports de production sont suspendus.
+Un [laboratoire synthétique et les playlists locales](docs/LOCAL_PLAYLISTS.md) sont
+disponibles : `make lab` lance Navidrome isolé et vérifie le streaming, les miroirs
+publics, cinq Smart Playlists et les radios artiste/morceau/genre. Aucun volume de
+production n'est monté dans ce laboratoire.
+
+La [restauration guidée](docs/RECOVERY.md) permet désormais de reconstruire et
+vérifier une copie Navidrome depuis un snapshot :
+`make recover RECOVERY_CONFIG=recovery.local.json`. Les chemins doivent être
+renseignés et la musique disponible séparément ; le worker n'est pas réactivé.
+
 # Music ingestion
 
 A Python CLI that imports a YouTube Music playlist into a tagged M4A library.

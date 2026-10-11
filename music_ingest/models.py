@@ -16,7 +16,12 @@ class MusicClient(Protocol):
         ...
 
 
-class TrackMetadata(TypedDict):
+class RecordingIdentifiers(TypedDict, total=False):
+    recording_mbid: str | None
+    isrc: str | None
+
+
+class TrackMetadata(RecordingIdentifiers):
     title: str
     artists: list[str]
     album: str | None
@@ -27,7 +32,7 @@ class TrackMetadata(TypedDict):
     album_artist: str | None
 
 
-class LibraryItem(TypedDict):
+class LibraryItem(RecordingIdentifiers):
     path: Path
     title: str
     artists: list[str]

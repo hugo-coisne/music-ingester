@@ -1,0 +1,6 @@
+{
+  "backup": "/path/to/verified/backup",
+  "destination": "/path/to/new/recovered-instance",
+  "music": "/path/to/existing/music",
+  "port": 15436
+}

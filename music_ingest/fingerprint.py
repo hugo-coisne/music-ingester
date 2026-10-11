@@ -37,7 +37,8 @@ def fingerprint(path: Path) -> str | None:
 class FingerprintMatcher:
     """Index candidate paths once and calculate their fingerprints on demand."""
 
-    def __init__(self, library_index: LibraryIndex):
+    def __init__(self, library_index: LibraryIndex, max_existing: int = 8):
+        self._remaining = max_existing
         self._candidates: dict[Path, float] = {}
         self._cache: dict[Path, str | None] = {}
         for items in library_index.values():
@@ -63,6 +64,10 @@ class FingerprintMatcher:
         for path, candidate_duration in self._candidates.items():
             if path == filepath or not path.is_file() or abs(candidate_duration - duration) > 4:
                 continue
+            if path not in self._cache:
+                if self._remaining <= 0:
+                    continue
+                self._remaining -= 1
             if self.value_for(path) == target:
                 return path
         return None

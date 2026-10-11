@@ -33,7 +33,7 @@ def _add_configuration_options(
     )
     if sync_command:
         parser.add_argument(
-            "--list-only", action="store_true",
+            "--list-only", "--dry-run", action="store_true",
             help="Preview without writing files or import history",
         )
     parser.add_argument("--library-dir", type=Path)
@@ -85,6 +85,18 @@ def resolve_config(
 
 def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
+    if argv and argv[0] == 'recover':
+        from .recovery import main as recovery_main
+        return recovery_main(argv[1:])
+    if argv and argv[0] == 'radio':
+        from .radio import main as radio_main
+        return radio_main(argv[1:])
+    if argv and argv[0] == 'watch':
+        from .watch import main as watch_main
+        return watch_main(argv[1:])
+    if argv and argv[0] == 'discover':
+        from .discovery.cli import main as discovery_main
+        return discovery_main(argv[1:])
     if argv and argv[0] in {"cleanup", "doctor", "status"}:
         from . import maintenance
 
@@ -102,7 +114,7 @@ def main(argv: list[str] | None = None) -> int:
             if command == "doctor":
                 return maintenance.doctor(config)
             return maintenance.status(config)
-        except (ConfigurationError, OSError, sqlite3.DatabaseError) as exc:
+        except (ConfigurationError, OSError, RuntimeError, sqlite3.DatabaseError) as exc:
             parser.error(str(exc))
 
     parser = build_parser()

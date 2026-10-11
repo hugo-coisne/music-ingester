@@ -1,0 +1,9 @@
+{
+  "name": "Favorites",
+  "comment": "Favoris du propriétaire de cette playlist.",
+  "public": true,
+  "all": [{"is": {"loved": true}}],
+  "sort": "dateLoved",
+  "order": "desc",
+  "limit": 500
+}

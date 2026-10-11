@@ -1,0 +1,2 @@
+# Copy to youtube-playlists.txt. One playlist ID per line; # introduces a comment.
+# Example: PLxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx

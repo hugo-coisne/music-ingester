@@ -1,0 +1,9 @@
+{
+  "name": "Weekly Mix",
+  "comment": "Favoris et titres déjà écoutés ; sélection stable pendant une semaine.",
+  "public": true,
+  "any": [{"is": {"loved": true}}, {"gt": {"playCount": 0}}],
+  "sort": "random",
+  "limit": 25,
+  "refreshDelay": "1w"
+}

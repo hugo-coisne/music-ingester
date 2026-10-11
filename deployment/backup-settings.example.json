@@ -1,0 +1,19 @@
+{
+  "destination": "/srv/home-music/automation/backups",
+  "lock_file": "/srv/home-music/automation/state/watch.db.lock",
+  "min_free_bytes": 2147483648,
+  "databases": [
+    "/srv/navidrome/data/navidrome.db",
+    "/srv/home-music/automation/state/ingest.db",
+    "/srv/home-music/automation/state/watch.db"
+  ],
+  "configs": [
+    "/srv/home-music/automation/.env",
+    "/srv/home-music/automation/compose.watch.yml",
+    "/srv/home-music/automation/config/watch.toml",
+    "/srv/home-music/automation/config/music-ingest.toml",
+    "/srv/home-music/automation/config/navidrome-credentials.json",
+    "/srv/home-music/automation/config/lastfm-api-key",
+    "/srv/home-music/automation/playlists/youtube.txt"
+  ]
+}

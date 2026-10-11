@@ -1,0 +1,9 @@
+{
+  "name": "Fresh Discoveries",
+  "comment": "Ajouts des 14 derniers jours dans Managed Singles ; adapter le chemin avant installation.",
+  "public": true,
+  "all": [{"startsWith": {"filepath": "Managed Singles/"}}, {"inTheLast": {"dateAdded": 14}}],
+  "sort": "dateAdded",
+  "order": "desc",
+  "limit": 25
+}

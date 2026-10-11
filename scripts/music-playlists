@@ -1,0 +1,34 @@
+#!/bin/sh
+# Install beside compose.watch.yml and .env on the server.
+set -eu
+cd -- "$(dirname -- "$0")"
+action=${1:-status}
+case "$action" in
+  add|remove)
+    test "$#" -eq 2 || { echo "Usage: $0 $action PLAYLIST_ID" >&2; exit 2; }
+    docker compose --env-file .env -f compose.watch.yml run --rm \
+      --volume "$PWD/playlists:/playlists:rw" watch \
+      watch "$action" "$2" --config /config/watch.toml
+    ;;
+  list)
+    docker compose --env-file .env -f compose.watch.yml run --rm watch \
+      watch "$action" --config /config/watch.toml
+    ;;
+  status|report)
+    if test "$action" = status; then detail=--summary; else detail=; fi
+    docker compose --env-file .env -f compose.watch.yml run --rm watch \
+      watch status --config /config/watch.toml $detail
+    ;;
+  preview)
+    docker compose --env-file .env -f compose.watch.yml run --rm watch \
+      watch run --config /config/watch.toml
+    ;;
+  run) systemctl --user start --no-block home-music-watch.service ;;
+  radio)
+    shift
+    docker compose --env-file .env -f compose.watch.yml run --rm watch \
+      radio --config /config/watch.toml "$@"
+    ;;
+  logs) journalctl --user -u home-music-watch.service -n 100 --no-pager ;;
+  *) echo 'Actions: add ID, remove ID, list, status, report, preview, run, logs, radio [options]' >&2; exit 2 ;;
+esac

@@ -105,6 +105,11 @@ def build_config(
         "reference_libraries": (),
         "download_timeout": 900,
     }
+    if profile == "sandbox":
+        sandbox_root = config_path.parent / "environments" / "sandbox"
+        values.update(library_dir=sandbox_root / "library",
+                      staging_dir=sandbox_root / "staging",
+                      db_path=sandbox_root / "state" / "ingest.db")
     if document:
         values.update(_profile_values(document, profile))
 
@@ -153,4 +158,19 @@ def build_config(
         raise ConfigurationError("download_timeout must be a number") from exc
     if not 0 < values["download_timeout"] < float("inf"):
         raise ConfigurationError("download_timeout must be finite and greater than zero")
+    if profile == "sandbox":
+        # CLI/env overrides must not silently redirect sandbox writes to production.
+        production = dict(document.get("profiles", {}).get("production", {}))
+        protected = [
+            _resolve_path(production.get(name, fallback), profile_base)
+            for name, fallback in (
+                ("library_dir", LIBRARY_DIR), ("staging_dir", STAGING_DIR),
+                ("db_path", DB_PATH),
+            )
+        ]
+        for name in ("library_dir", "staging_dir", "db_path"):
+            path = values[name]
+            for other in protected:
+                if path == other or path in other.parents or other in path.parents:
+                    raise ConfigurationError(f"sandbox {name} overlaps production: {other}")
     return Config(**values)

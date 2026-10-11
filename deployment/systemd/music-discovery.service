@@ -1,0 +1,17 @@
+# User unit template. Adjust checkout path before installing. No downloader runs.
+[Unit]
+Description=Home Music recommendation collection (no acquisition)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/home-music
+EnvironmentFile=%h/.config/home-music/secrets.env
+ExecStart=%h/home-music/.venv/bin/python -m music_ingest discover --config %h/home-music/discovery.toml --apply
+UMask=0077
+NoNewPrivileges=true
+Nice=10
+CPUQuota=100%
+MemoryMax=512M
+TimeoutStartSec=15min
